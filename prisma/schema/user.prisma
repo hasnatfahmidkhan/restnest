@@ -11,7 +11,8 @@ model User {
     updatedAt DateTime @updatedAt
 
     // refences 
-    profile Profile?
+    profile  Profile?
+    property Property[]
 
     @@index([email])
     @@map("users")

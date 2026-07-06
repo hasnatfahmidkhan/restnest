@@ -1,0 +1,27 @@
+model Property {
+    id          String  @id @default(ulid())
+    title       String  @db.VarChar(254)
+    description String?
+    rentPrice   Decimal @db.Decimal(10, 2)
+    address     String
+    city        String  @db.VarChar(100)
+    division    String  @db.VarChar(100)
+    bedrooms    Int     @default(0) @db.SmallInt
+    bathrooms   Int     @default(0) @db.SmallInt
+    area        Int?
+    isAvailable Boolean @default(true)
+
+    categoryId String
+    landlordId String
+
+    // references 
+    category Category @relation(fields: [categoryId], references: [id])
+    landlord User     @relation(fields: [landlordId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([categoryId]) // optimizes filtering properties by category 
+    @@index([landlordId]) // optimizes looking up a landlord's property
+    @@map("properties")
+}
