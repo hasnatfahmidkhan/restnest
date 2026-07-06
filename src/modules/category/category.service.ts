@@ -1,20 +1,41 @@
-import type { Tnext, TReq, TRes } from "../../types";
-import { catchAsync } from "../../utils/catchAsync";
+import httpStatus from "http-status";
+import AppError from "../../errors/AppError";
+import { prisma } from "../../lib/prisma";
 
 class CategoryService {
   // get categories
-  getAllCategories = catchAsync(
-    async (req: TReq, res: TRes, next: Tnext) => {},
-  );
+  getAllCategories = async () => {};
 
   // create category
-  createCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {});
+  createCategory = async (name: string) => {
+    const categoryExists = await prisma.category.findUnique({
+      where: {
+        name,
+      },
+    });
+
+    // check if category exist
+    if (categoryExists) {
+      throw new AppError(httpStatus.CONFLICT, "Category already exists");
+    }
+
+    const category = await prisma.category.create({
+      data: {
+        name,
+      },
+      omit: {
+        createAt: true,
+        updatedAt: true,
+      },
+    });
+    return category;
+  };
 
   //   updaete category
-  updateCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {});
+  updateCategory = async () => {};
 
   // delete category
-  deleteCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {});
+  deleteCategory = async () => {};
 }
 
 export const categoryService = new CategoryService();

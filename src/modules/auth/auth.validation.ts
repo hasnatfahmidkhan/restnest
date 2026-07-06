@@ -1,15 +1,18 @@
 import { z } from "zod";
 import { UserRole } from "../../../generated/prisma/enums";
 
-export const loginBodySchema = z.object({
-  email: z.email("Please provide a valid email address").trim(),
+export const loginBodySchema = z.object(
+  {
+    email: z.email("Please provide a valid email address").trim(),
 
-  password: z
-    .string()
-    .trim()
-    .min(6, "Password must be at least 6 characters")
-    .max(100, "Password cannot exceed 100 characters"),
-});
+    password: z
+      .string()
+      .trim()
+      .min(6, "Password must be at least 6 characters")
+      .max(100, "Password cannot exceed 100 characters"),
+  },
+  { error: "Request body is required" },
+);
 
 export const loginUserSchema = z.object({
   body: loginBodySchema,

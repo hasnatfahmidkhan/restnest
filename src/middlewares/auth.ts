@@ -3,6 +3,7 @@ import type { JwtPayload } from "jsonwebtoken";
 import { UserStatus, type UserRole } from "../../generated/prisma/enums";
 import config from "../config";
 import AppError from "../errors/AppError";
+import { prisma } from "../lib/prisma";
 import type { Tnext, TReq, TRes } from "../types";
 import { catchAsync } from "../utils/catchAsync";
 import { jwtUtils } from "../utils/jwt";
@@ -27,8 +28,19 @@ const auth = (...requiredRoles: UserRole[]) =>
       config.jwt_access_secret,
     );
 
+    // check user exist
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: decoded.id,
+      },
+    });
+
+    if (!existingUser) {
+      throw new AppError(httpStatus.UNAUTHORIZED, "User does not exist!");
+    }
+
     // 4.  check if user is banned
-    if (decoded.status === UserStatus.BAN) {
+    if (existingUser.status === UserStatus.BAN) {
       throw new AppError(
         httpStatus.FORBIDDEN,
         "Your account has been banned. Please contact support.",
