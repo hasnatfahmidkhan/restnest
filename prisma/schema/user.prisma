@@ -1,0 +1,18 @@
+model User {
+    id       String     @id @default(ulid())
+    name     String?    @db.VarChar(100)
+    email    String     @unique @db.VarChar(255)
+    password String
+    phone    String?    @unique @db.VarChar(20)
+    status   UserStatus @default(ACTIVE)
+    role     UserRole   @default(TENANT)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // refences 
+    profile Profile?
+
+    @@index([email])
+    @@map("users")
+}
