@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
+import httpStatus from "http-status";
 import type { SignOptions } from "jsonwebtoken";
 import config from "../../config";
+import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import type { loginUserPayload, registerUserPayload } from "./auth.interface";
@@ -15,7 +17,10 @@ class AuthService {
     });
 
     if (isExists) {
-      throw new Error("User already exists. Please login.");
+      throw new AppError(
+        httpStatus.CONFLICT,
+        "User already exists. Please login."
+      );
     }
 
     // hashPasword
@@ -62,12 +67,18 @@ class AuthService {
     });
 
     if (!isExists) {
-      throw new Error("User not exists, please register");
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        "User not exists, please register",
+      );
     }
 
     const comparePassword = await bcrypt.compare(password, isExists.password);
     if (!comparePassword) {
-      throw new Error("Wrong password, please give correct password.");
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        "Wrong password, please give correct password.",
+      );
     }
 
     const user = await prisma.user.findUnique({

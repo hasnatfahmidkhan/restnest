@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { UserRole } from "../../../generated/prisma/enums";
+import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import { authController } from "./auth.controller";
 import { loginUserSchema, registerUserSchema } from "./auth.validation";
@@ -12,5 +14,11 @@ router.post(
 );
 
 router.post("/login", validateRequest(loginUserSchema), authController.login);
+
+router.get(
+  "/me",
+  auth(UserRole.TENANT, UserRole.LANDLORD, UserRole.ADMIN),
+  authController.getProfile,
+);
 
 export const authRoute = router;

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import type { UserRole, UserStatus } from "../../generated/prisma/enums";
 
 export type TRes = Response;
 export type TReq = Request;
@@ -10,8 +11,8 @@ declare global {
         user?: {
           id: string;
           email: string;
-          role: "";
-          name: string;
+          role: UserRole;
+          status: UserStatus;
         };
       };
     }

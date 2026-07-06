@@ -36,6 +36,16 @@ class AuthController {
       },
     });
   });
+
+  // me
+  getProfile = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    sendResponse(res, {
+      success: true,
+      statusCode: htppStatus.OK,
+      message: "User login successfully",
+      data: "",
+    });
+  });
 }
 
 export const authController = new AuthController();
