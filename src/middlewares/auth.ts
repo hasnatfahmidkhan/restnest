@@ -47,14 +47,14 @@ const auth = (...requiredRoles: UserRole[]) =>
       );
     }
 
-    // 5. attach decoded user to request
-    req.user = decoded;
-
-    // 6. Check role
+    
+    // 7. Check role
     if (requiredRoles.length && !requiredRoles.includes(decoded.role)) {
       throw new AppError(httpStatus.FORBIDDEN, "You are forbidden!");
     }
-
+    
+    // 6. attach decoded user to request
+    req.user = decoded;
     // 7. Continue
     next();
   });
