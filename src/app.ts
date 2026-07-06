@@ -3,7 +3,9 @@ import cors from "cors";
 import express, { type Application } from "express";
 import httpStatus from "http-status";
 import config from "./config";
-import type { TReq, TRes } from "./types/indext";
+import { globalErrorHandler } from "./middlewares/globalError";
+import { notFoundHandler } from "./middlewares/notFound";
+import type { TReq, TRes } from "./types";
 const app: Application = express();
 
 // middleware
@@ -17,8 +19,15 @@ app.use(
   }),
 );
 
+// 1. All your actual API Routes go here
 app.get("/", (req: TReq, res: TRes) => {
   res.status(httpStatus.OK).send("RestNest Server is Running");
 });
+
+// 2. ⚠️ THE NOT FOUND MIDDLEWARE (Catches anything that didn't match above)
+app.use(notFoundHandler);
+
+// 3. Global Error Handler (Catches server crashes/thrown errors)
+app.use(globalErrorHandler);
 
 export default app;
