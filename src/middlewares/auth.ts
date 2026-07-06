@@ -47,8 +47,7 @@ const auth = (...requiredRoles: UserRole[]) =>
       );
     }
 
-    
-    // 7. Check role
+    // 5. Check role
     if (requiredRoles.length && !requiredRoles.includes(decoded.role)) {
       throw new AppError(httpStatus.FORBIDDEN, "You are forbidden!");
     }

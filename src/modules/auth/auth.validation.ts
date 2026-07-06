@@ -18,6 +18,8 @@ export const loginUserSchema = z.object({
   body: loginBodySchema,
 });
 
+
+
 export const registerUserSchema = z.object({
   body: loginBodySchema.extend({
     profilePhoto: z.url("Profile photo must be a valid URL"),

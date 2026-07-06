@@ -9,7 +9,6 @@ class CategoryController {
   getAllCategories = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const categories = await categoryService.getAllCategories();
     sendResponse(res, {
-      success: true,
       statusCode: httpStatus.CREATED,
       message: "Retrieved all categories successfully",
       data: categories,
@@ -21,7 +20,6 @@ class CategoryController {
     const { name } = req.body;
     const category = await categoryService.createCategory(name);
     sendResponse(res, {
-      success: true,
       statusCode: httpStatus.CREATED,
       message: "Category created successfully",
       data: category,
@@ -29,10 +27,27 @@ class CategoryController {
   });
 
   //   updaete category
-  updateCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {});
+  updateCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const categoryId = req.params.categoryId as string;
+    const { name } = req.body;
+    const category = await categoryService.updateCategory(categoryId, name);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Category updated successfully!",
+      data: category,
+    });
+  });
 
   // delete category
-  deleteCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {});
+  deleteCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const categoryId = req.params.categoryId as string;
+    await categoryService.deleteCategory(categoryId);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Category deleted Successfully!",
+      data: null,
+    });
+  });
 }
 
 export const categoryController = new CategoryController();

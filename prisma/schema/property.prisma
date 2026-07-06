@@ -1,5 +1,5 @@
 model Property {
-    id          String  @id @default(ulid())
+    id          String  @id @default(uuid())
     title       String  @db.VarChar(254)
     description String?
     rentPrice   Decimal @db.Decimal(10, 2)

@@ -1,10 +1,10 @@
 model Category {
-    id   String @id @default(ulid())
+    id   String @id @default(uuid())
     name String @unique @db.VarChar(255)
 
     property Property[]
 
-    createdAt  DateTime @default(now())
+    createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     @@map("categories")

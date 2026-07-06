@@ -7,7 +7,7 @@ type TMeta = {
 };
 
 type TResponseData<T> = {
-  success: boolean;
+  success?: boolean;
   statusCode: number;
   message: string;
   meta?: TMeta;
@@ -16,7 +16,7 @@ type TResponseData<T> = {
 
 export const sendResponse = <T>(res: TRes, data: TResponseData<T>) => {
   res.status(data.statusCode).json({
-    success: data.success,
+    success: true,
     message: data.message,
     meta: data.meta,
     data: data.data,

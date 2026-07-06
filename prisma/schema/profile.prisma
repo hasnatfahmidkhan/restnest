@@ -1,5 +1,5 @@
 model Profile {
-    id           String  @id @default(ulid())
+    id           String  @id @default(uuid())
     profilePhoto String?
     bio          String?
 

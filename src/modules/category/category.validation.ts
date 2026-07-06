@@ -19,11 +19,7 @@ const categoryIdParamsSchema = z.object({
   }),
 });
 
-export const updateCategorySchema = z.object({
-  // `shape.body` reuses the body validation from createCategorySchema.
-  // `partial()` makes all body fields optional for PATCH requests.
-  body: createCategorySchema.shape.body.partial(),
-  // `shape.params` reuses the params validation from categoryIdParamsSchema.
+export const updateCategorySchema = createCategorySchema.extend({
   params: categoryIdParamsSchema.shape.params,
 });
 
