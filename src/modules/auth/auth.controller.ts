@@ -39,11 +39,12 @@ class AuthController {
 
   // me
   getProfile = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const user = await authService.getProfile(req.user?.id as string);
     sendResponse(res, {
       success: true,
       statusCode: htppStatus.OK,
-      message: "User login successfully",
-      data: "",
+      message: "User profile retrieved successfully",
+      data: user,
     });
   });
 }

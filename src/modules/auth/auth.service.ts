@@ -19,7 +19,7 @@ class AuthService {
     if (isExists) {
       throw new AppError(
         httpStatus.CONFLICT,
-        "User already exists. Please login."
+        "User already exists. Please login.",
       );
     }
 
@@ -120,6 +120,24 @@ class AuthService {
     );
 
     return { accessToken, refreshToken, user };
+  };
+
+  getProfile = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      omit: {
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      include: {
+        profile: true,
+      },
+    });
+
+    return user;
   };
 }
 
