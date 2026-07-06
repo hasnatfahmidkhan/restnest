@@ -4,7 +4,12 @@ import { prisma } from "../../lib/prisma";
 
 class CategoryService {
   // get categories
-  getAllCategories = async () => {};
+  getAllCategories = async () => {
+    const categories = await prisma.category.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return categories;
+  };
 
   // create category
   createCategory = async (name: string) => {
@@ -24,7 +29,7 @@ class CategoryService {
         name,
       },
       omit: {
-        createAt: true,
+        createdAt: true,
         updatedAt: true,
       },
     });

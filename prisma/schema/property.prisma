@@ -15,7 +15,7 @@ model Property {
     landlordId String
 
     // references 
-    category Category @relation(fields: [categoryId], references: [id])
+    category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
     landlord User     @relation(fields: [landlordId], references: [id])
 
     createdAt DateTime @default(now())

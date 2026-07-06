@@ -4,7 +4,7 @@ model Category {
 
     property Property[]
 
-    createAt  DateTime @default(now())
+    createdAt  DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     @@map("categories")

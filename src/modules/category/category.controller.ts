@@ -6,9 +6,15 @@ import { categoryService } from "./category.service";
 
 class CategoryController {
   // get categories
-  getAllCategories = catchAsync(
-    async (req: TReq, res: TRes, next: Tnext) => {},
-  );
+  getAllCategories = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const categories = await categoryService.getAllCategories();
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "Retrieved all categories successfully",
+      data: categories,
+    });
+  });
 
   // create category
   createCategory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
