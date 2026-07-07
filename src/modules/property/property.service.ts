@@ -1,4 +1,5 @@
 import htppStatus from "http-status";
+import type { Prisma } from "../../../generated/prisma/client";
 import type { PropertyWhereInput } from "../../../generated/prisma/models";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
@@ -295,22 +296,31 @@ class PropertyService {
       }
     }
 
+    const data: Prisma.PropertyUpdateInput = {
+      ...(title && { title }),
+      ...(description && { description }),
+      ...(address && { address }),
+      ...(city && { city }),
+      ...(division && { division }),
+      ...(rentPrice && { rentPrice }),
+      ...(area && { area }),
+      ...(bedrooms && { bedrooms }),
+      ...(bathrooms && { bathrooms }),
+      ...(categoryId && {
+        category: {
+          connect: {
+            id: categoryId,
+          },
+        },
+      }),
+    };
+
     const updatePropertyTransaction = await prisma.$transaction(async (tx) => {
       const property = await tx.property.update({
         where: {
           id,
         },
-        data: {
-          ...(title && { title }),
-          ...(description && { description }),
-          ...(address && { address }),
-          ...(bedrooms && { bedrooms }),
-          ...(bathrooms && { bathrooms }),
-          ...(area && { area }),
-          ...(city && { city }),
-          ...(rentPrice && { rentPrice }),
-          ...(division && { division }),
-        },
+        data,
         omit: {
           createdAt: true,
           updatedAt: true,
@@ -340,7 +350,35 @@ class PropertyService {
     return updatePropertyTransaction;
   };
 
-  deleteProperty = async () => {};
+  deleteProperty = async (landlordId: string, id: string) => {
+    // check property exists
+    const existsProperty = await prisma.property.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!existsProperty) {
+      throw new AppError(
+        htppStatus.NOT_FOUND,
+        "Property not found. Please provide a valid property id.",
+      );
+    }
+    // ownership validation
+    if (existsProperty.landlordId !== landlordId) {
+      throw new AppError(
+        htppStatus.FORBIDDEN,
+        "You are not authorized to delete this property.",
+      );
+    }
+
+    await prisma.property.delete({
+      where: {
+        id,
+      },
+    });
+    return null;
+  };
 }
 
 export const propertyService = new PropertyService();

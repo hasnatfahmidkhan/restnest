@@ -27,9 +27,16 @@ router.post(
 
 // update property
 router.patch(
-  "/landlord/properties",
+  "/landlord/properties/:propertyId",
   auth(UserRole.LANDLORD),
   propertyController.updateProperty,
+);
+
+// delete property
+router.delete(
+  "/landlord/properties/:propertyId",
+  auth(UserRole.LANDLORD),
+  propertyController.deleteProperty,
 );
 
 export const propertyRoute = router;

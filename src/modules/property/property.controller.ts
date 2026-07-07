@@ -24,9 +24,32 @@ class PropertyController {
     });
   });
 
-  updateProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {});
+  updateProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const propertyId = req.params.propertyId as string;
+    const landlordId = req.user?.id as string;
+    const updateProperty = await propertyService.updateProperty(
+      propertyId,
+      landlordId,
+      req.body,
+    );
 
-  deleteProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {});
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Property updated successfully.",
+      data: updateProperty,
+    });
+  });
+
+  deleteProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const landlordId = req.user?.id as string;
+    const propertyId = req.params.propertyId as string;
+    await propertyService.deleteProperty(landlordId, propertyId);
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Property deleted successfully",
+      data: null,
+    });
+  });
 }
 
 export const propertyController = new PropertyController();
