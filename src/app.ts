@@ -7,6 +7,7 @@ import { globalErrorHandler } from "./middlewares/globalError";
 import { notFoundHandler } from "./middlewares/notFound";
 import { authRoute } from "./modules/auth/auth.route";
 import { categoryRoute } from "./modules/category/category.route";
+import { propertyRoute } from "./modules/property/property.route";
 import type { TReq, TRes } from "./types";
 const app: Application = express();
 
@@ -31,6 +32,9 @@ app.use("/api/auth", authRoute);
 
 // category related apis
 app.use("/api/category", categoryRoute);
+
+// property related apis
+app.use("/api", propertyRoute);
 
 // 2. ⚠️ THE NOT FOUND MIDDLEWARE (Catches anything that didn't match above)
 app.use(notFoundHandler);
