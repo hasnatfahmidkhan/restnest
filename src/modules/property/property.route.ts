@@ -25,4 +25,11 @@ router.post(
   propertyController.createProperty,
 );
 
+// update property
+router.patch(
+  "/landlord/properties",
+  auth(UserRole.LANDLORD),
+  propertyController.updateProperty,
+);
+
 export const propertyRoute = router;

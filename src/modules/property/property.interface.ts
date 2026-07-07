@@ -7,7 +7,7 @@ import type {
 export type createPropertyPayload = z.infer<typeof propertyValidationSchema>;
 export type updatePropertyPayload = Partial<
   z.infer<typeof propertyValidationSchema>
->;
+>
 
 export const PropertySearchableFields = [
   "title",
@@ -24,4 +24,6 @@ export const PropertySortableFields = [
   "totalReviews",
 ] as const;
 
-export type TGetAllPropertiesQuery = z.infer<typeof propertyQuerySchema>;
+export type TGetAllPropertiesQuery = Partial<
+  z.infer<typeof propertyQuerySchema>
+>;

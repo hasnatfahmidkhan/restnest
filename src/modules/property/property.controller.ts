@@ -6,8 +6,7 @@ import { propertyService } from "./property.service";
 
 class PropertyController {
   getAllProperties = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
-    const query = req.query;
-    const properties = await propertyService.getAllProperties(query);
+    const properties = await propertyService.getAllProperties(req.query);
     sendResponse(res, {
       statusCode: htppStatus.OK,
       message: "Retrieved all properties successfully",

@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma";
 import type {
   createPropertyPayload,
   TGetAllPropertiesQuery,
+  updatePropertyPayload,
 } from "./property.interface";
 
 class PropertyService {
@@ -140,7 +141,7 @@ class PropertyService {
         take,
         skip,
         orderBy: {
-          [sortBy]: sortOrder,
+          [sortBy!]: sortOrder,
         },
       }),
     ]);
@@ -160,6 +161,8 @@ class PropertyService {
     landlordId: string,
     payload: createPropertyPayload,
   ) => {
+    const { amenityIds, ...propertyPayload } = payload;
+    // Validate category
     const categoryExists = await prisma.category.findUnique({
       where: {
         id: payload.categoryId,
@@ -173,23 +176,169 @@ class PropertyService {
       );
     }
 
-    const property = await prisma.property.create({
-      data: {
-        ...payload,
-        description: payload.description ?? null,
-        area: payload.area ?? null,
-        landlordId,
-      },
-      omit: {
-        createdAt: true,
-        updatedAt: true,
-      },
+    // Validate amenities
+    if (amenityIds && amenityIds?.length > 0) {
+      const amenities = await prisma.amenity.findMany({
+        where: {
+          id: {
+            in: amenityIds,
+          },
+        },
+      });
+
+      if (amenities.length !== amenityIds.length) {
+        throw new AppError(
+          htppStatus.BAD_REQUEST,
+          "One or more amenity ids are invalid.",
+        );
+      }
+    }
+
+    const property = await prisma.$transaction(async (tx) => {
+      const createdProperty = await tx.property.create({
+        data: {
+          landlordId,
+          ...propertyPayload,
+          description: propertyPayload.description ?? null,
+          area: propertyPayload.area ?? null,
+        },
+        omit: {
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (amenityIds && amenityIds?.length > 0) {
+        await tx.propertyAmenity.createMany({
+          data: amenityIds.map((amenityId) => ({
+            propertyId: createdProperty.id,
+            amenityId,
+          })),
+        });
+      }
+      return createdProperty;
     });
 
     return property;
   };
 
-  updateProperty = async () => {};
+  updateProperty = async (
+    id: string,
+    landlordId: string,
+    payload: updatePropertyPayload,
+  ) => {
+    const {
+      address,
+      area,
+      bathrooms,
+      bedrooms,
+      categoryId,
+      city,
+      description,
+      division,
+      rentPrice,
+      title,
+      amenityIds,
+      // ...propertyPayload
+    } = payload;
+
+    // Check property exists
+    const existsProperty = await prisma.property.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!existsProperty) {
+      throw new AppError(
+        htppStatus.NOT_FOUND,
+        "Property not found. please provide valid id.",
+      );
+    }
+
+    // Ensure the landlord owns the property
+    if (existsProperty.landlordId !== landlordId) {
+      throw new AppError(
+        htppStatus.FORBIDDEN,
+        "You are not authorized to update this property.",
+      );
+    }
+
+    // Validate category if updating
+    if (payload.categoryId) {
+      const category = await prisma.category.findUnique({
+        where: {
+          id: payload.categoryId,
+        },
+      });
+
+      if (!category) {
+        throw new AppError(htppStatus.NOT_FOUND, "Category not found.");
+      }
+    }
+
+    // Validate amenities
+    if (amenityIds) {
+      const amenities = await prisma.amenity.findMany({
+        where: {
+          id: {
+            in: amenityIds,
+          },
+        },
+      });
+
+      if (amenities.length !== amenityIds.length) {
+        throw new AppError(
+          htppStatus.BAD_REQUEST,
+          "One or more amenity ids are invalid.",
+        );
+      }
+    }
+
+    const updatePropertyTransaction = await prisma.$transaction(async (tx) => {
+      const property = await tx.property.update({
+        where: {
+          id,
+        },
+        data: {
+          ...(title && { title }),
+          ...(description && { description }),
+          ...(address && { address }),
+          ...(bedrooms && { bedrooms }),
+          ...(bathrooms && { bathrooms }),
+          ...(area && { area }),
+          ...(city && { city }),
+          ...(rentPrice && { rentPrice }),
+          ...(division && { division }),
+        },
+        omit: {
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (amenityIds) {
+        await tx.propertyAmenity.deleteMany({
+          where: {
+            propertyId: id,
+          },
+        });
+      }
+
+      if (amenityIds && amenityIds?.length > 0) {
+        await tx.propertyAmenity.createMany({
+          data: amenityIds.map((amenityId) => ({
+            propertyId: id,
+            amenityId,
+          })),
+        });
+      }
+
+      return property;
+    });
+
+    return updatePropertyTransaction;
+  };
 
   deleteProperty = async () => {};
 }

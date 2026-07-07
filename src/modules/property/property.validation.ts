@@ -25,6 +25,10 @@ export const propertyValidationSchema = z.object({
   area: z.coerce.number().int().positive().optional(),
 
   categoryId: z.uuid("Invalid Category ID."),
+  amenityIds: z.preprocess((value) => {
+    if (value === undefined) return undefined;
+    return Array.isArray(value) ? value : [value];
+  }, z.array(z.string().trim()).optional()),
 });
 
 export const createPropertySchema = z.object({
