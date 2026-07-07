@@ -1,27 +1,28 @@
-    model Property {
-        id          String  @id @default(uuid())
-        title       String  @db.VarChar(255)
-        description String?
-        rentPrice   Decimal @db.Decimal(10, 2)
-        address     String
-        city        String  @db.VarChar(100)
-        division    String  @db.VarChar(100)
-        bedrooms    Int     @default(0) @db.SmallInt
-        bathrooms   Int     @default(0) @db.SmallInt
-        area        Int?
-        isAvailable Boolean @default(true)
+model Property {
+    id          String  @id @default(uuid())
+    title       String  @db.VarChar(255)
+    description String?
+    rentPrice   Decimal @db.Decimal(10, 2)
+    address     String
+    city        String  @db.VarChar(100)
+    division    String  @db.VarChar(100)
+    bedrooms    Int     @default(0) @db.SmallInt
+    bathrooms   Int     @default(0) @db.SmallInt
+    area        Int?
+    isAvailable Boolean @default(true)
 
-        categoryId String
-        landlordId String
+    categoryId String
+    landlordId String
 
-        // references 
-        category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-        landlord User     @relation(fields: [landlordId], references: [id])
+    // references 
+    category          Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    landlord          User              @relation(fields: [landlordId], references: [id])
+    propertyAmenities PropertyAmenity[]
 
-        createdAt DateTime @default(now())
-        updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-        @@index([categoryId]) // optimizes filtering properties by category 
-        @@index([landlordId]) // optimizes looking up a landlord's property
-        @@map("properties")
-    }
+    @@index([categoryId]) // optimizes filtering properties by category 
+    @@index([landlordId]) // optimizes looking up a landlord's property
+    @@map("properties")
+}

@@ -5,9 +5,15 @@ import { sendResponse } from "../../utils/sendResponse";
 import { propertyService } from "./property.service";
 
 class PropertyController {
-  getAllProperties = catchAsync(
-    async (req: TReq, res: TRes, next: Tnext) => {},
-  );
+  getAllProperties = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const query = req.query;
+    const properties = await propertyService.getAllProperties(query);
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Retrieved all properties successfully",
+      data: properties,
+    });
+  });
 
   createProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const landlordId = req.user?.id as string;
