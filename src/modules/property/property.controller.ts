@@ -3,14 +3,26 @@ import type { Tnext, TReq, TRes } from "../../types";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { propertyService } from "./property.service";
+import { propertyQuerySchema } from "./property.validation";
 
 class PropertyController {
   getAllProperties = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
-    const properties = await propertyService.getAllProperties(req.query);
+    const parsed = propertyQuerySchema.parse(req.query);
+    const properties = await propertyService.getAllProperties(parsed);
     sendResponse(res, {
       statusCode: htppStatus.OK,
       message: "Retrieved all properties successfully",
       data: properties,
+    });
+  });
+
+  getSignleProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const id = req.params.id as string;
+    const property = await propertyService.getSignleProperty(id);
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Property retrieved successfully.",
+      data: property,
     });
   });
 

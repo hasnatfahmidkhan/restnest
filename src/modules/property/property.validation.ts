@@ -39,6 +39,10 @@ const propertyParamsSchema = z.object({
   id: z.uuid("Invalid Property ID."),
 });
 
+export const getSignlePropertySchema = z.object({
+  params: propertyParamsSchema,
+});
+
 export const updatePropertySchema = z.object({
   params: propertyParamsSchema,
   body: propertyValidationSchema.partial(),

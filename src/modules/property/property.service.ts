@@ -3,10 +3,10 @@ import type { Prisma } from "../../../generated/prisma/client";
 import type { PropertyWhereInput } from "../../../generated/prisma/models";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
-import type {
-  createPropertyPayload,
-  TGetAllPropertiesQuery,
-  updatePropertyPayload,
+import {
+  type createPropertyPayload,
+  type TGetAllPropertiesQuery,
+  type updatePropertyPayload,
 } from "./property.interface";
 
 class PropertyService {
@@ -156,6 +156,23 @@ class PropertyService {
         totalPage: Math.ceil(total / take),
       },
     };
+  };
+
+  getSignleProperty = async (id: string) => {
+    const property = await prisma.property.findUnique({
+      where: {
+        id,
+        isAvailable: true,
+      },
+    });
+    if (!property) {
+      throw new AppError(
+        htppStatus.NOT_FOUND,
+        "Property not found. Please provide valid id.",
+      );
+    }
+
+    return property;
   };
 
   createProperty = async (

@@ -6,6 +6,7 @@ import { propertyController } from "./property.controller";
 import {
   createPropertySchema,
   getAllPropertiesQuerySchema,
+  getSignlePropertySchema,
 } from "./property.validation";
 
 const router = Router();
@@ -15,6 +16,13 @@ router.get(
   "/properties",
   validateRequest(getAllPropertiesQuerySchema),
   propertyController.getAllProperties,
+);
+
+// get single property
+router.get(
+  "/properties/:id",
+  validateRequest(getSignlePropertySchema),
+  propertyController.getSignleProperty,
 );
 
 // create property
