@@ -1,0 +1,14 @@
+model PropertyImage {
+    id        String  @id @default(uuid())
+    url       String
+    isPrimary Boolean @default(false)
+
+    propertyId String
+    // relations
+    property   Property @relation(fields: [propertyId], references: [id])
+
+    createdAt DateTime @default(now())
+
+    @@index([propertyId])
+    @@map("property_images")
+}
