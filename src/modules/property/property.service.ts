@@ -164,6 +164,18 @@ class PropertyService {
         id,
         isAvailable: true,
       },
+      include: {
+        propertyAmenities: {
+          select: {
+            amenity: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+          },
+        },
+      },
     });
     if (!property) {
       throw new AppError(
@@ -265,6 +277,9 @@ class PropertyService {
       // ...propertyPayload
     } = payload;
 
+    // unique amenity ids
+    const uniqueAmenityIds = amenityIds ? [...new Set(amenityIds)] : [];
+
     // Check property exists
     const existsProperty = await prisma.property.findUnique({
       where: {
@@ -301,16 +316,16 @@ class PropertyService {
     }
 
     // Validate amenities
-    if (amenityIds) {
+    if (uniqueAmenityIds) {
       const amenities = await prisma.amenity.findMany({
         where: {
           id: {
-            in: amenityIds,
+            in: uniqueAmenityIds,
           },
         },
       });
 
-      if (amenities.length !== amenityIds.length) {
+      if (amenities.length !== uniqueAmenityIds.length) {
         throw new AppError(
           htppStatus.BAD_REQUEST,
           "One or more amenity ids are invalid.",
@@ -338,7 +353,7 @@ class PropertyService {
     };
 
     const updatePropertyTransaction = await prisma.$transaction(async (tx) => {
-      const property = await tx.property.update({
+      await tx.property.update({
         where: {
           id,
         },
@@ -347,9 +362,21 @@ class PropertyService {
           createdAt: true,
           updatedAt: true,
         },
+        include: {
+          propertyAmenities: {
+            select: {
+              amenity: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
       });
 
-      if (amenityIds) {
+      if (uniqueAmenityIds) {
         await tx.propertyAmenity.deleteMany({
           where: {
             propertyId: id,
@@ -366,7 +393,18 @@ class PropertyService {
         });
       }
 
-      return property;
+      return await tx.property.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          propertyAmenities: {
+            select: {
+              amenity: true,
+            },
+          },
+        },
+      });
     });
 
     return updatePropertyTransaction;
