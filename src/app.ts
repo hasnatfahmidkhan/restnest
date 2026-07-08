@@ -9,6 +9,7 @@ import { amenityRoute } from "./modules/amenity/amenity.route";
 import { authRoute } from "./modules/auth/auth.route";
 import { categoryRoute } from "./modules/category/category.route";
 import { propertyRoute } from "./modules/property/property.route";
+import { rentalRoute } from "./modules/rental/rental.route";
 import type { TReq, TRes } from "./types";
 const app: Application = express();
 
@@ -39,6 +40,9 @@ app.use("/api", propertyRoute);
 
 // amenity route
 app.use("/api", amenityRoute);
+
+// rental route
+app.use("/api/rentals", rentalRoute);
 
 // 2. ⚠️ THE NOT FOUND MIDDLEWARE (Catches anything that didn't match above)
 app.use(notFoundHandler);
