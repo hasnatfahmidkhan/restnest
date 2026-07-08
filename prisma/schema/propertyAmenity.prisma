@@ -1,11 +1,11 @@
 model PropertyAmenity {
-    id         String @id @default(uuid())
     amenityId  String
     propertyId String
 
     // references 
-    amenity  Amenity  @relation(fields: [amenityId], references: [id])
-    property Property @relation(fields: [propertyId], references: [id])
+    amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+    property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-    @@map("propertyamenities")
+    @@id([propertyId, amenityId])
+    @@map("property_amenities")
 }
