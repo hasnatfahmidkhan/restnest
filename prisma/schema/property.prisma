@@ -18,6 +18,7 @@ model Property {
     category          Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
     landlord          User              @relation(fields: [landlordId], references: [id])
     propertyAmenities PropertyAmenity[]
+    rentalRequests    RentalRequest[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

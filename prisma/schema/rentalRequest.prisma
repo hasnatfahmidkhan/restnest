@@ -1,0 +1,32 @@
+model RentalRequest {
+    id String @id @default(uuid())
+
+    tenantId   String
+    propertyId String
+
+    status RentalRequestStatus @default(PENDING)
+
+    moveInDate  DateTime
+    leaseMonths Int
+    endDate     DateTime
+
+    message String?
+
+    approvedAt  DateTime?
+    rejectedAt  DateTime?
+    paidAt      DateTime?
+    completedAt DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    tenant   User     @relation(fields: [tenantId], references: [id])
+    property Property @relation(fields: [propertyId], references: [id])
+
+    @@index([tenantId]) // optimizes looking up a tenant's rental requests
+    @@index([propertyId]) // optimizes looking up a property's rental requests
+    @@index([status]) // optimizes filtering rental requests by status
+    @@index([endDate]) // optimizes filtering for cron jobs to find rental requests that are ending soon
+    @@map("rental_requests")
+}

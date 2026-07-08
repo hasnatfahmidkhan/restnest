@@ -8,3 +8,11 @@ enum UserRole {
     LANDLORD
     ADMIN
 }
+
+enum RentalRequestStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    ACTIVE
+    COMPLETED
+}
