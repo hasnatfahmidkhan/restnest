@@ -6,6 +6,7 @@ import { rentalController } from "./rental.controller";
 import {
   createRentalRequestSchema,
   rentalRequestParamsSchema,
+  updateRentalRequestStatusSchema,
 } from "./rental.validation";
 
 const router = Router();
@@ -24,6 +25,14 @@ router.post(
   auth(UserRole.TENANT),
   validateRequest(createRentalRequestSchema),
   rentalController.createRentalRequest,
+);
+
+// update property rental request status
+router.patch(
+  "/landlord/requests/:id",
+  auth(UserRole.LANDLORD),
+  validateRequest(updateRentalRequestStatusSchema),
+  rentalController.updateRentalRequestStatus,
 );
 
 export const rentalRoute = router;

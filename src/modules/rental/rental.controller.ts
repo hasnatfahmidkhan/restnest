@@ -19,7 +19,7 @@ class RentalController {
   getRentalDetails = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const id = req.user?.id as string;
     const rentalId = req.params.rentalId as string;
-    
+
     const rentalRequest = await rentalService.getRentalDetails(id, rentalId);
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -40,6 +40,26 @@ class RentalController {
         statusCode: httpStatus.CREATED,
         message: "Rental request created successfully!",
         data: rentalRequest,
+      });
+    },
+  );
+
+  updateRentalRequestStatus = catchAsync(
+    async (req: TReq, res: TRes, next: Tnext) => {
+      const rentalId = req.params.id as string;
+      const landlordId = req.user?.id as string;
+      const { status } = req.body;
+
+      const updatedRentalRequest =
+        await rentalService.updateRentalRequestStatus(
+          landlordId,
+          rentalId,
+          status,
+        );
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: "Rental request status updated successfully!",
+        data: updatedRentalRequest,
       });
     },
   );

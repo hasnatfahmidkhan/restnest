@@ -124,6 +124,73 @@ class RentalService {
     });
     return rentalRequest;
   };
+
+  updateRentalRequestStatus = async (
+    landlordId: string,
+    rentalId: string,
+    status: string,
+  ) => {
+    // Find rental request and verify ownership
+    const rentalRequest = await prisma.rentalRequest.findFirst({
+      where: {
+        id: rentalId,
+        property: {
+          landlordId: landlordId,
+        },
+      },
+    });
+
+    if (!rentalRequest) {
+      throw new AppError(httpStatus.NOT_FOUND, "Rental request not found");
+    }
+
+    // Only pending requests can be processed
+    if (rentalRequest.status !== RentalRequestStatus.PENDING) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "This rental request has already been processed.",
+      );
+    }
+
+    // Prevent approved/active rentals for the same property
+    if (status === RentalRequestStatus.APPROVED) {
+      const existingApprovedRequest = await prisma.rentalRequest.findFirst({
+        where: {
+          propertyId: rentalRequest.propertyId,
+          status: {
+            in: [RentalRequestStatus.APPROVED, RentalRequestStatus.ACTIVE],
+          },
+        },
+      });
+
+      if (existingApprovedRequest) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          "This property already has an approved or active rental request.",
+        );
+      }
+    }
+
+    const updatedRentalRequest = await prisma.rentalRequest.update({
+      where: {
+        id: rentalId,
+      },
+      data: {
+        status:
+          status === RentalRequestStatus.APPROVED
+            ? RentalRequestStatus.APPROVED
+            : RentalRequestStatus.REJECTED,
+        approvedAt: status === RentalRequestStatus.APPROVED ? new Date() : null,
+        rejectedAt: status === RentalRequestStatus.REJECTED ? new Date() : null,
+      },
+      omit: {
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return updatedRentalRequest;
+  };
 }
 
 export const rentalService = new RentalService();

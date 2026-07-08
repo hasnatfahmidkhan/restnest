@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RentalRequestStatus } from "../../../generated/prisma/enums";
 
 const propertyIdSchema = z.uuid("Invalid property ID.");
 
@@ -40,4 +41,16 @@ export const updateRentalRequestSchema = z.object({
       propertyId: true,
     })
     .partial(),
+});
+
+export const updateRentalRequestStatusSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid rental request ID."),
+  }),
+  body: z.object({
+    status: z.enum([
+      RentalRequestStatus.APPROVED,
+      RentalRequestStatus.REJECTED,
+    ]),
+  }),
 });
