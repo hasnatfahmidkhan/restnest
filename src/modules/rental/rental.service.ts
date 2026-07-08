@@ -5,6 +5,31 @@ import { prisma } from "../../lib/prisma";
 import type { TCreateRentalPayload } from "./rental.interface";
 
 class RentalService {
+  getMyRentals  = async (tenantId: string) => {
+    const rentalRequests = await prisma.rentalRequest.findMany({
+      where: {
+        tenantId: tenantId,
+      },
+      select: {
+        id: true,
+        status: true,
+        moveInDate: true,
+        leaseMonths: true,
+        endDate: true,
+        createdAt: true,
+        property: {
+          select: {
+            id: true,
+            title: true,
+            rentPrice: true,
+            city: true,
+            division: true,
+          },
+        },
+      },
+    });
+    return rentalRequests;
+  };
   createRentalRequest = async (
     payload: TCreateRentalPayload,
     tenantId: string,

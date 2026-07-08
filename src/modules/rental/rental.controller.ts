@@ -6,6 +6,16 @@ import { rentalService } from "./rental.service";
 import { rentalRequestBodySchema } from "./rental.validation";
 
 class RentalController {
+  getMyRentals = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const id = req.user?.id as string;
+    const rentalRequests = await rentalService.getMyRentals(id);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Retrieved rental requests successfully!",
+      data: rentalRequests,
+    });
+  });
+
   createRentalRequest = catchAsync(
     async (req: TReq, res: TRes, next: Tnext) => {
       const parsedBody = rentalRequestBodySchema.parse(req.body);

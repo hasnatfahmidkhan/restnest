@@ -7,6 +7,8 @@ import { createRentalRequestSchema } from "./rental.validation";
 
 const router = Router();
 
+router.get("/", auth(UserRole.TENANT), rentalController.getRentalRequests);
+
 router.post(
   "/",
   auth(UserRole.TENANT),
