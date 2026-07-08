@@ -3,11 +3,21 @@ import { UserRole } from "../../../generated/prisma/enums";
 import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import { rentalController } from "./rental.controller";
-import { createRentalRequestSchema } from "./rental.validation";
+import {
+  createRentalRequestSchema,
+  rentalRequestParamsSchema,
+} from "./rental.validation";
 
 const router = Router();
 
 router.get("/", auth(UserRole.TENANT), rentalController.getMyRentals);
+
+router.get(
+  "/:rentalId",
+  auth(UserRole.TENANT),
+  validateRequest(rentalRequestParamsSchema),
+  rentalController.getRentalDetails,
+);
 
 router.post(
   "/",

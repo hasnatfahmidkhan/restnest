@@ -28,6 +28,12 @@ export const createRentalRequestSchema = z.object({
   body: rentalRequestBodySchema,
 });
 
+export const rentalRequestParamsSchema = z.object({
+  params: z.object({
+    rentalId: z.uuid("Invalid rental ID."),
+  }),
+});
+
 export const updateRentalRequestSchema = z.object({
   body: rentalRequestBodySchema
     .omit({

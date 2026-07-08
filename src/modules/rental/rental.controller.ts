@@ -16,6 +16,18 @@ class RentalController {
     });
   });
 
+  getRentalDetails = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const id = req.user?.id as string;
+    const rentalId = req.params.rentalId as string;
+    
+    const rentalRequest = await rentalService.getRentalDetails(id, rentalId);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Retrieved rental request details successfully!",
+      data: rentalRequest,
+    });
+  });
+
   createRentalRequest = catchAsync(
     async (req: TReq, res: TRes, next: Tnext) => {
       const parsedBody = rentalRequestBodySchema.parse(req.body);

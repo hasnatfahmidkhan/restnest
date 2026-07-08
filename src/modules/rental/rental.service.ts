@@ -41,6 +41,20 @@ class RentalService {
     return rentalRequests;
   };
 
+  getRentalDetails = async (tenantId: string, rentalId: string) => {
+    const rentalRequest = await prisma.rentalRequest.findFirst({
+      where: {
+        id: rentalId,
+        tenantId: tenantId,
+      },
+      include: {
+        property: true,
+      },
+    });
+
+    return rentalRequest;
+  };
+
   createRentalRequest = async (
     payload: TCreateRentalPayload,
     tenantId: string,
