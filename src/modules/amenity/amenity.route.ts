@@ -6,7 +6,7 @@ import { UserRole } from "../../../generated/prisma/enums";
 const router = Router();
 router.get("/amenities", amenityController.getAllAmenity);
 
-router.post('/admin/amenity', auth(UserRole.ADMIN), amenityController.createAmenity)
+router.post('/admin/amenities', auth(UserRole.ADMIN), amenityController.createAmenity)
 
 router.patch('/admin/amenity/:id', auth(UserRole.ADMIN), amenityController.updateAmenity)
 

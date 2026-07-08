@@ -15,7 +15,7 @@ class AmenityController {
   });
 
   createAmenity = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
-    const amenity = await amenityService.createAmenity(req.body.name);
+    const amenity = await amenityService.createAmenity(req.body.amenities);
     sendResponse(res, {
       statusCode: htppStatus.OK,
       message: "create amenity successfully!",

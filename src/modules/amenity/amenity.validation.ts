@@ -14,7 +14,10 @@ const paramsIdSchema = z.object({
 
 export const createAmenitySchema = z.object({
   body: z.object({
-    name: amenityNameSchema,
+    amenities: z
+      .array(amenityNameSchema)
+      .min(1, "At least one amenity is required.")
+      .max(100, "Cannot create more than 100 amenities at once."),
   }),
 });
 
