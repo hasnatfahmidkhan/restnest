@@ -180,6 +180,10 @@ class PropertyService {
     payload: createPropertyPayload,
   ) => {
     const { amenityIds, ...propertyPayload } = payload;
+
+    // Remove duplicate amenity ids
+    const uniqueAmenityIds = amenityIds ? [...new Set(amenityIds)] : [];
+
     // Validate category
     const categoryExists = await prisma.category.findUnique({
       where: {
@@ -195,16 +199,16 @@ class PropertyService {
     }
 
     // Validate amenities
-    if (amenityIds && amenityIds?.length > 0) {
+    if (uniqueAmenityIds?.length > 0) {
       const amenities = await prisma.amenity.findMany({
         where: {
           id: {
-            in: amenityIds,
+            in: uniqueAmenityIds,
           },
         },
       });
 
-      if (amenities.length !== amenityIds.length) {
+      if (amenities.length !== uniqueAmenityIds.length) {
         throw new AppError(
           htppStatus.BAD_REQUEST,
           "One or more amenity ids are invalid.",
@@ -226,9 +230,10 @@ class PropertyService {
         },
       });
 
-      if (amenityIds && amenityIds?.length > 0) {
+      // Create property amenities if amenityIds are provided
+      if (uniqueAmenityIds?.length > 0) {
         await tx.propertyAmenity.createMany({
-          data: amenityIds.map((amenityId) => ({
+          data: uniqueAmenityIds.map((amenityId) => ({
             propertyId: createdProperty.id,
             amenityId,
           })),

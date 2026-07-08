@@ -32,7 +32,6 @@ class AuthController {
       data: {
         user,
         accessToken,
-        refreshToken,
       },
     });
   });
