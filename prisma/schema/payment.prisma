@@ -1,0 +1,21 @@
+model Payment {
+    id     String        @id @default(uuid())
+    amount Decimal       @db.Decimal(10, 2)
+    status PaymentStatus @default(PENDING)
+    paidAt DateTime?
+
+    rentalRequestId String  @unique
+    transactionId   String? @unique
+    sessionId       String? @unique
+
+    // relations
+    rentalRequest RentalRequest @relation(fields: [rentalRequestId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([rentalRequestId]) // optimizes looking up a rental request's payment
+    @@index([sessionId]) // optimizes looking up a payment by its session ID
+    @@index([status]) // optimizes filtering payments by status
+    @@map("payments")
+}

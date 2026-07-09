@@ -14,7 +14,6 @@ model RentalRequest {
 
     approvedAt  DateTime?
     rejectedAt  DateTime?
-    paidAt      DateTime?
     completedAt DateTime?
 
     createdAt DateTime @default(now())
@@ -23,6 +22,7 @@ model RentalRequest {
     // Relations
     tenant   User     @relation(fields: [tenantId], references: [id])
     property Property @relation(fields: [propertyId], references: [id])
+    payment  Payment?
 
     @@index([tenantId]) // optimizes looking up a tenant's rental requests
     @@index([propertyId]) // optimizes looking up a property's rental requests

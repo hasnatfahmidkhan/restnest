@@ -8,6 +8,7 @@ import { notFoundHandler } from "./middlewares/notFound";
 import { amenityRoute } from "./modules/amenity/amenity.route";
 import { authRoute } from "./modules/auth/auth.route";
 import { categoryRoute } from "./modules/category/category.route";
+import { paymentRoute } from "./modules/payment/payment.route";
 import { propertyRoute } from "./modules/property/property.route";
 import { rentalRoute } from "./modules/rental/rental.route";
 import type { TReq, TRes } from "./types";
@@ -43,6 +44,9 @@ app.use("/api", amenityRoute);
 
 // rental route
 app.use("/api/rentals", rentalRoute);
+
+// payment related apis
+app.use("/api/payments", paymentRoute);
 
 // 2. ⚠️ THE NOT FOUND MIDDLEWARE (Catches anything that didn't match above)
 app.use(notFoundHandler);
