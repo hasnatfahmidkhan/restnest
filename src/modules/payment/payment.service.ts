@@ -1,4 +1,9 @@
 import httpStatus from "http-status";
+import type Stripe from "stripe";
+import {
+  PaymentStatus,
+  RentalRequestStatus,
+} from "../../../generated/prisma/enums";
 import config from "../../config";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
@@ -84,7 +89,93 @@ class PaymentService {
       },
     });
 
-    return { url: session.url, sessionId: session.id };
+    await prisma.payment.create({
+      data: {
+        amount: rentalRequest.property.rentPrice,
+        rentalRequestId: id,
+        sessionId: session.id,
+      },
+    });
+
+    return session.url;
+  };
+
+  handleWebhook = async (payload: Buffer, signature: string) => {
+    const event = stripe.webhooks.constructEvent(
+      payload,
+      signature,
+      config.stripe_webhook_secret_key,
+    );
+
+    // Handle the event
+    switch (event.type) {
+      // Occurs when a Checkout Session has been successfully completed.
+      case "checkout.session.completed":
+        const session: Stripe.Checkout.Session = event.data.object;
+
+        const sessionId = session.id;
+        const transactionId = session.payment_intent as string;
+
+        const rentalRequestId = session.metadata?.rentalRequestId as string;
+        const propertyId = session.metadata?.propertyId as string;
+
+        const payment = await prisma.payment.findUnique({
+          where: {
+            sessionId,
+          },
+        });
+
+        if (!payment) {
+          throw new AppError(httpStatus.NOT_FOUND, "Payment record not found.");
+        }
+
+        if (payment?.status === PaymentStatus.COMPLETED) {
+          return;
+        }
+
+        await prisma.$transaction(async (tx) => {
+          // update payment
+          await tx.payment.update({
+            where: {
+              sessionId,
+            },
+            data: {
+              transactionId,
+              status: PaymentStatus.COMPLETED,
+              paidAt: new Date(),
+            },
+          });
+
+          // update rentalRequest
+          await tx.rentalRequest.update({
+            where: {
+              id: rentalRequestId,
+            },
+            data: {
+              status: RentalRequestStatus.ACTIVE,
+              completedAt: new Date(),
+            },
+          });
+
+          // Mark property unavailable
+          await tx.property.update({
+            where: {
+              id: propertyId,
+            },
+            data: {
+              isAvailable: false,
+            },
+          });
+        });
+
+        break;
+      // Occurs when a Checkout Session is expired.
+      case "checkout.session.expired":
+        break;
+      default:
+        // Unexpected event type
+        console.log(`Unhandled event type ${event.type}.`);
+    }
   };
 }
 

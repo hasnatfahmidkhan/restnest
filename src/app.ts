@@ -14,6 +14,8 @@ import { rentalRoute } from "./modules/rental/rental.route";
 import type { TReq, TRes } from "./types";
 const app: Application = express();
 
+app.use("/api/payments/confirm", express.raw({ type: "application/json" }));
+
 // middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

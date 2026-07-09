@@ -7,5 +7,6 @@ const router = Router();
 
 // Create a payment intent
 router.post('/create', auth(UserRole.TENANT), paymentController.createCheckoutSession)
+router.post('/confirm', paymentController.handleWebhook)
 
 export const paymentRoute = router;

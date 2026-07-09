@@ -23,6 +23,12 @@ class PaymentController {
       });
     },
   );
+
+  handleWebhook = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const event = req.body as Buffer;
+    const signature = req.headers["stripe-signature"] as string;
+    await paymentService.handleWebhook(event, signature);
+  });
 }
 
 export const paymentController = new PaymentController();
