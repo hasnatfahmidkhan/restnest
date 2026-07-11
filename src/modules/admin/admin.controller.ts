@@ -4,6 +4,7 @@ import catchAsync from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { adminService } from "./admin.service";
 import {
+  getAllPropertiesQuerySchema,
   getAllUsersQuerySchema,
   userStatusUpdateSchema,
 } from "./admin.validation";
@@ -34,6 +35,17 @@ class AdminController {
       statusCode: htppStatus.OK,
       message: "user status updated",
       data: updateStatus,
+    });
+  });
+
+  getAllProperties = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const query = getAllPropertiesQuerySchema.parse({ query: req.query }).query;
+    const properties = await adminService.getAllProperties(query);
+
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "user status updated",
+      data: properties,
     });
   });
 }

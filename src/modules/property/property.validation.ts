@@ -83,7 +83,18 @@ export const propertyQuerySchema = z
 
     amenity: z
       .preprocess((value) => {
-        if (value === undefined) return undefined;
+        if (value === undefined || value === "") return undefined;
+
+
+        if (typeof value === "string") {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            return [value]; 
+          }
+        }
+
         return Array.isArray(value) ? value : [value];
       }, z.array(z.string().trim()))
       .optional(),

@@ -98,18 +98,18 @@ class PropertyService {
     }
 
     // amenity filtering
-    // if (amenity?.length) {
-    //   where.propertyAmenities = {
-    //     some: {
-    //       amenity: {
-    //         name: {
-    //           in: amenity,
-    //           mode: "insensitive",
-    //         },
-    //       },
-    //     },
-    //   };
-    // }
+    if (amenity?.length) {
+      where.propertyAmenities = {
+        some: {
+          amenity: {
+            name: {
+              in: amenity,
+              mode: "insensitive",
+            },
+          },
+        },
+      };
+    }
 
     // price range
     if (minPrice || maxPrice) {
@@ -139,6 +139,18 @@ class PropertyService {
       prisma.property.count({ where }),
       prisma.property.findMany({
         where,
+        include: {
+          propertyAmenities: {
+            select: {
+              amenity: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
         take,
         skip,
         orderBy: {

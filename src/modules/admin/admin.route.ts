@@ -9,6 +9,11 @@ import {
 } from "./admin.validation";
 
 const router = Router();
+router.get(
+  "/properties",
+  auth(UserRole.ADMIN),
+  adminController.getAllProperties,
+);
 
 router.get(
   "/users",

@@ -6,7 +6,7 @@ import {
 } from "../../../generated/prisma/client";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
-import type { adminQuery } from "./admin.interface";
+import type { adminQuery, TGetAllPropertiesQuery } from "./admin.interface";
 
 class AdminService {
   getAllUsers = async (query: adminQuery) => {
@@ -112,6 +112,128 @@ class AdminService {
       },
     });
     return updatedUser;
+  };
+
+  getAllProperties = async (query: TGetAllPropertiesQuery) => {
+    const {
+      page,
+      limit,
+      searchTerm,
+      city,
+      division,
+      category,
+      landlordId,
+      availability,
+      sortBy,
+      sortOrder,
+    } = query;
+
+    const skip = (page - 1) * limit;
+    const where: Prisma.PropertyWhereInput = {};
+
+    if (searchTerm) {
+      where.OR = [
+        {
+          title: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          address: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        },
+      ];
+    }
+
+    // Filter
+    if (landlordId) {
+      where.landlordId = landlordId;
+    }
+
+    if (city) {
+      where.city = {
+        equals: city,
+        mode: "insensitive",
+      };
+    }
+
+    if (division) {
+      where.division = {
+        equals: division,
+        mode: "insensitive",
+      };
+    }
+
+    if (category) {
+      where.category = {
+        name: {
+          equals: category,
+          mode: "insensitive",
+        },
+      };
+    }
+
+    if (availability) {
+      where.isAvailable = availability;
+    }
+
+    const [total, properties] = await prisma.$transaction([
+      prisma.property.count({
+        where,
+      }),
+
+      prisma.property.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        include: {
+          landlord: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          category: true,
+          propertyImages: {
+            where: {
+              isPrimary: true,
+            },
+            take: 1,
+          },
+          _count: {
+            select: {
+              rentalRequests: true,
+            },
+          },
+          rentalRequests: {
+            select: {
+              review: {
+                select: {
+                  rating: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+        totalPage: Math.ceil(total / limit),
+      },
+      properties,
+    };
   };
 }
 

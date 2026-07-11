@@ -18,7 +18,7 @@ class AuthController {
 
   // login user
   login = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
-    const { user, accessToken, refreshToken } = await authService.loginUser(
+    const { userData, accessToken, refreshToken } = await authService.loginUser(
       req.body,
     );
 
@@ -30,7 +30,7 @@ class AuthController {
       statusCode: htppStatus.OK,
       message: "User login successfully",
       data: {
-        user,
+        userData,
         accessToken,
       },
     });
