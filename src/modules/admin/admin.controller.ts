@@ -1,10 +1,11 @@
-import htppStatus from "http-status";
+import httpStatus from "http-status";
 import type { Tnext, TReq, TRes } from "../../types";
 import catchAsync from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { adminService } from "./admin.service";
 import {
   getAllPropertiesQuerySchema,
+  getAllRentalsQuerySchema,
   getAllUsersQuerySchema,
   userStatusUpdateSchema,
 } from "./admin.validation";
@@ -16,7 +17,7 @@ class AdminController {
     }).query;
     const users = await adminService.getAllUsers(parsedQeury);
     sendResponse(res, {
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "Retrieved all users",
       data: users,
     });
@@ -32,7 +33,7 @@ class AdminController {
     );
 
     sendResponse(res, {
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "user status updated",
       data: updateStatus,
     });
@@ -43,9 +44,23 @@ class AdminController {
     const properties = await adminService.getAllProperties(query);
 
     sendResponse(res, {
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "user status updated",
       data: properties,
+    });
+  });
+
+  getAllRentals = catchAsync(async (req, res) => {
+    const parsedQuery = getAllRentalsQuerySchema.parse({
+      query: req.query,
+    }).query;
+    const result = await adminService.getAllRentals(parsedQuery);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Retrieved all rental requests successfully.",
+      meta: result.meta,
+      data: result.data,
     });
   });
 }

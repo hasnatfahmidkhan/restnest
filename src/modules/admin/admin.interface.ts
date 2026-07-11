@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { UserStatus } from "../../../generated/prisma/enums";
 import type {
   getAllPropertiesQuerySchema,
+  getAllRentalsQuerySchema,
   getAllUsersQuerySchema,
 } from "./admin.validation";
 
@@ -11,4 +12,8 @@ export type TUserStatus = typeof UserStatus;
 
 export type TGetAllPropertiesQuery = z.infer<
   typeof getAllPropertiesQuerySchema
+>["query"];
+
+export type TGetAllRentalsQuery = z.infer<
+  typeof getAllRentalsQuerySchema
 >["query"];

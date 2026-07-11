@@ -6,7 +6,11 @@ import {
 } from "../../../generated/prisma/client";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
-import type { adminQuery, TGetAllPropertiesQuery } from "./admin.interface";
+import type {
+  adminQuery,
+  TGetAllPropertiesQuery,
+  TGetAllRentalsQuery,
+} from "./admin.interface";
 
 class AdminService {
   getAllUsers = async (query: adminQuery) => {
@@ -233,6 +237,150 @@ class AdminService {
         totalPage: Math.ceil(total / limit),
       },
       properties,
+    };
+  };
+
+  getAllRentals = async (query: TGetAllRentalsQuery) => {
+    const {
+      page,
+      limit,
+      searchTerm,
+      status,
+      paymentStatus,
+      tenantId,
+      landlordId,
+      propertyId,
+      sortBy,
+      sortOrder,
+    } = query;
+
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.RentalRequestWhereInput = {};
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (tenantId) {
+      where.tenantId = tenantId;
+    }
+
+    if (propertyId) {
+      where.propertyId = propertyId;
+    }
+
+    if (landlordId) {
+      where.property = {
+        landlordId,
+      };
+    }
+
+    if (paymentStatus) {
+      where.payment = {
+        status: paymentStatus,
+      };
+    }
+
+    if (searchTerm) {
+      where.OR = [
+        {
+          tenant: {
+            name: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+        {
+          tenant: {
+            email: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+        {
+          property: {
+            title: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+      ];
+    }
+
+    const [rentals, total] = await prisma.$transaction([
+      prisma.rentalRequest.findMany({
+        where,
+        skip,
+        take: limit,
+
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+
+        include: {
+          tenant: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+
+          property: {
+            select: {
+              id: true,
+              title: true,
+              city: true,
+              rentPrice: true,
+
+              landlord: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+
+              propertyImages: {
+                where: {
+                  isPrimary: true,
+                },
+                select: {
+                  url: true,
+                },
+              },
+            },
+          },
+
+          payment: {
+            select: {
+              id: true,
+              amount: true,
+              status: true,
+              transactionId: true,
+              paidAt: true,
+            },
+          },
+        },
+      }),
+
+      prisma.rentalRequest.count({
+        where,
+      }),
+    ]);
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+        totalPage: Math.ceil(total / limit),
+      },
+      data: rentals,
     };
   };
 }

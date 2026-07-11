@@ -4,6 +4,7 @@ import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import { adminController } from "./admin.controller";
 import {
+  getAllRentalsQuerySchema,
   getAllUsersQuerySchema,
   userStatusUpdateSchema,
 } from "./admin.validation";
@@ -13,6 +14,13 @@ router.get(
   "/properties",
   auth(UserRole.ADMIN),
   adminController.getAllProperties,
+);
+
+router.get(
+  "/rentals",
+  auth(UserRole.ADMIN),
+  validateRequest(getAllRentalsQuerySchema),
+  adminController.getAllRentals,
 );
 
 router.get(
