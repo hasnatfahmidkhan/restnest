@@ -20,6 +20,11 @@ class RentalController {
     async (req: TReq, res: TRes, next: Tnext) => {
       const id = req.user?.id as string;
       const rentals = await rentalService.getLandlordRentalRequests(id);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: "Retrieve all rentals",
+        data: rentals,
+      });
     },
   );
 
