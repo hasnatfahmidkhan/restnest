@@ -268,6 +268,78 @@ class PaymentService {
         console.log(`Error from webhook, Unhandled event type ${event.type}.`);
     }
   };
+
+  // get payment history
+  getPaymentHistory = async (tenantId: string) => {
+    const payments = await prisma.payment.findMany({
+      where: {
+        rentalRequest: {
+          tenantId,
+        },
+      },
+      select: {
+        id: true,
+        amount: true,
+        status: true,
+        paidAt: true,
+        transactionId: true,
+        rentalRequest: {
+          select: {
+            status: true,
+            moveInDate: true,
+            endDate: true,
+            property: {
+              select: {
+                title: true,
+                propertyImages: {
+                  where: {
+                    isPrimary: true,
+                  },
+                  select: {
+                    id: true,
+                    url: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    return payments;
+  };
+
+  // get payment details
+  getPaymentDetails = async (tenantId: string, id: string) => {
+    const payment = await prisma.payment.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        rentalRequest: {
+          include: {
+            property: {
+              include: {
+                landlord: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!payment) {
+      throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
+    }
+    // check the ownership of the payment
+    if (payment.rentalRequest.tenantId !== tenantId) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        "Forbidden access, you have not permission to access",
+      );
+    }
+
+    return payment;
+  };
 }
 
 export const paymentService = new PaymentService();

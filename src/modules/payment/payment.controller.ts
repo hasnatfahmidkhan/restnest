@@ -29,6 +29,27 @@ class PaymentController {
     const signature = req.headers["stripe-signature"] as string;
     await paymentService.handleWebhook(event, signature);
   });
+
+  paymentHistory = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const tenantId = req.user?.id as string;
+    const payments = await paymentService.getPaymentHistory(tenantId);
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Retrieved payments histroy",
+      data: payments,
+    });
+  });
+
+  paymentDetails = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const tenantId = req.user?.id as string;
+    const paymentId = req.params.id as string;
+    const payment = await paymentService.getPaymentDetails(tenantId, paymentId);
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Retrieved payment details",
+      data: payment,
+    });
+  });
 }
 
 export const paymentController = new PaymentController();
