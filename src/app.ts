@@ -12,6 +12,7 @@ import { paymentRoute } from "./modules/payment/payment.route";
 import { propertyRoute } from "./modules/property/property.route";
 import { rentalRoute } from "./modules/rental/rental.route";
 import type { TReq, TRes } from "./types";
+import { reviewRoute } from "./modules/review/review.route";
 const app: Application = express();
 
 app.use("/api/payments/confirm", express.raw({ type: "application/json" }));
@@ -49,6 +50,9 @@ app.use("/api/rentals", rentalRoute);
 
 // payment related apis
 app.use("/api/payments", paymentRoute);
+
+// review related apis
+app.use('/api/reviews', reviewRoute)
 
 // 2. ⚠️ THE NOT FOUND MIDDLEWARE (Catches anything that didn't match above)
 app.use(notFoundHandler);
