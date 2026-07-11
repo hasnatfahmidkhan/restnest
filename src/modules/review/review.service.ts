@@ -65,8 +65,60 @@ class ReviewService {
         ...(comment && { comment }),
       },
     });
-    
+
     return newReview;
+  };
+
+  getReviewByProperty = async (propertyId: string) => {
+    const summary = await prisma.review.aggregate({
+      where: {
+        rentalRequest: {
+          propertyId,
+        },
+      },
+      _avg: {
+        rating: true,
+      },
+      _count: {
+        rating: true,
+        id: true,
+      },
+    });
+    const reviews = await prisma.review.findMany({
+      where: {
+        rentalRequest: {
+          propertyId,
+        },
+      },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        rentalRequest: {
+          select: {
+            tenant: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return {
+      summary: {
+        averageRating: summary._avg.rating ?? 0,
+        totalRatings: summary._count.rating,
+        totalReviews: summary._count.id,
+      },
+      reviews,
+    };
   };
 }
 

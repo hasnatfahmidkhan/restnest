@@ -19,3 +19,9 @@ export const createReviewSchema = z.object({
       .optional(),
   }),
 });
+
+export const getPropertyReviewsSchema = z.object({
+  params: z.object({
+    id: z.uuid("Invalid property ID."),
+  }),
+});
