@@ -1,6 +1,6 @@
 import htppStatus from "http-status";
 import type { Tnext, TReq, TRes } from "../../types";
-import { catchAsync } from "../../utils/catchAsync";
+import catchAsync from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { setAuthCookies } from "../../utils/setAuthCookie";
 import { authService } from "./auth.service";

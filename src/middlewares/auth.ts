@@ -5,7 +5,7 @@ import config from "../config";
 import AppError from "../errors/AppError";
 import { prisma } from "../lib/prisma";
 import type { Tnext, TReq, TRes } from "../types";
-import { catchAsync } from "../utils/catchAsync";
+import catchAsync from "../utils/catchAsync";
 import { jwtUtils } from "../utils/jwt";
 
 const auth = (...requiredRoles: UserRole[]) =>
@@ -51,7 +51,7 @@ const auth = (...requiredRoles: UserRole[]) =>
     if (requiredRoles.length && !requiredRoles.includes(decoded.role)) {
       throw new AppError(httpStatus.FORBIDDEN, "You are forbidden!");
     }
-    
+
     // 6. attach decoded user to request
     req.user = decoded;
     // 7. Continue

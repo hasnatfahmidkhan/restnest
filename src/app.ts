@@ -5,14 +5,15 @@ import httpStatus from "http-status";
 import config from "./config";
 import { globalErrorHandler } from "./middlewares/globalError";
 import { notFoundHandler } from "./middlewares/notFound";
+import { adminRoute } from "./modules/admin/admin.route";
 import { amenityRoute } from "./modules/amenity/amenity.route";
 import { authRoute } from "./modules/auth/auth.route";
 import { categoryRoute } from "./modules/category/category.route";
 import { paymentRoute } from "./modules/payment/payment.route";
 import { propertyRoute } from "./modules/property/property.route";
 import { rentalRoute } from "./modules/rental/rental.route";
-import type { TReq, TRes } from "./types";
 import { reviewRoute } from "./modules/review/review.route";
+import type { TReq, TRes } from "./types";
 const app: Application = express();
 
 app.use("/api/payments/confirm", express.raw({ type: "application/json" }));
@@ -52,7 +53,10 @@ app.use("/api/rentals", rentalRoute);
 app.use("/api/payments", paymentRoute);
 
 // review related apis
-app.use('/api/reviews', reviewRoute)
+app.use("/api/reviews", reviewRoute);
+
+// admin related apis
+app.use("/api/admin", adminRoute);
 
 // 2. ⚠️ THE NOT FOUND MIDDLEWARE (Catches anything that didn't match above)
 app.use(notFoundHandler);
