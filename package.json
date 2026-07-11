@@ -5,12 +5,12 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "prisma generate && tsc",
-    "start": "node dist/src/server.js",
-    "stripe:webhook": "stripe listen --forward-to localhost:5000/api/payments/confirm"
+    "build": "tsup",
+    "start": "node dist/server.js",
+    "stripe:webhook": "stripe listen --forward-to https://rest-nest-three.vercel.app/api/payments/confirm"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
@@ -36,6 +36,7 @@
     "node-cron": "^4.6.0",
     "pg": "^8.22.0",
     "stripe": "^22.3.0",
+    "tsup": "^8.5.1",
     "zod": "^4.4.3"
   }
 }

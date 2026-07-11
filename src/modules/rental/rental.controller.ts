@@ -16,6 +16,13 @@ class RentalController {
     });
   });
 
+  getLandlordRentalRequests = catchAsync(
+    async (req: TReq, res: TRes, next: Tnext) => {
+      const id = req.user?.id as string;
+      const rentals = await rentalService.getLandlordRentalRequests(id);
+    },
+  );
+
   getRentalDetails = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const id = req.user?.id as string;
     const rentalId = req.params.rentalId as string;

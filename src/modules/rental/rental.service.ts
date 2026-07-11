@@ -41,6 +41,46 @@ class RentalService {
     return rentalRequests;
   };
 
+  getLandlordRentalRequests = async (landlordId: string) => {
+    
+    return prisma.rentalRequest.findMany({
+      where: {
+        property: {
+          landlordId,
+        },
+      },
+      select: {
+        id: true,
+        status: true,
+        moveInDate: true,
+        leaseMonths: true,
+        endDate: true,
+        createdAt: true,
+
+        tenant: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+
+        property: {
+          select: {
+            id: true,
+            title: true,
+            rentPrice: true,
+            city: true,
+            division: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  };
+
   getRentalDetails = async (tenantId: string, rentalId: string) => {
     const rentalRequest = await prisma.rentalRequest.findFirst({
       where: {

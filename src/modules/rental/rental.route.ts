@@ -12,6 +12,11 @@ import {
 const router = Router();
 
 router.get("/", auth(UserRole.TENANT), rentalController.getMyRentals);
+router.get(
+  "/landlord",
+  auth(UserRole.LANDLORD),
+  rentalController.getLandlordRentalRequests,
+);
 
 router.get(
   "/:rentalId",
