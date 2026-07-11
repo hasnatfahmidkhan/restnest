@@ -10,7 +10,7 @@ class PaymentController {
       const tenantId = req.user?.id as string;
       const email = req.user?.email as string;
       const rentalRequestId = req.body.rentalRequestId as string;
-      const session = await paymentService.createPaymentIntent(
+      const session = await paymentService.createPaymentSession(
         rentalRequestId,
         tenantId,
         email,
