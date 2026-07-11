@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import type { SignOptions } from "jsonwebtoken";
+import { UserStatus } from "../../../generated/prisma/enums";
 import config from "../../config";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
@@ -60,36 +61,9 @@ class AuthService {
   loginUser = async (payload: loginUserPayload) => {
     const { email, password } = payload;
 
-    const isExists = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
-
-    if (!isExists) {
-      throw new AppError(
-        httpStatus.NOT_FOUND,
-        "User not exists, please register",
-      );
-    }
-
-    const comparePassword = await bcrypt.compare(password, isExists.password);
-    if (!comparePassword) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        "Wrong password, please give correct password.",
-      );
-    }
-
     const user = await prisma.user.findUnique({
       where: {
-        id: isExists.id,
-        email,
-      },
-      omit: {
-        password: true,
-        createdAt: true,
-        updatedAt: true,
+        email: email,
       },
       include: {
         profile: {
@@ -99,6 +73,22 @@ class AuthService {
         },
       },
     });
+
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, "Invalid email or password.");
+    }
+
+    const comparePassword = await bcrypt.compare(password, user.password);
+    if (!comparePassword) {
+      throw new AppError(httpStatus.UNAUTHORIZED, "Invalid email or password.");
+    }
+
+    if (user.status === UserStatus.BAN) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        "Your account has been blocked. Please contact support.",
+      );
+    }
 
     const jwtPayload = {
       id: user?.id!,
@@ -113,13 +103,15 @@ class AuthService {
       config.jwt_access_expires_in as SignOptions,
     );
 
+    const { password: _, createdAt, updatedAt, ...userData } = user;
+
     const refreshToken = jwtUtils.createJWTToken(
       jwtPayload,
       config.jwt_refresh_secret,
       config.jwt_refresh_expires_in as SignOptions,
     );
 
-    return { accessToken, refreshToken, user };
+    return { accessToken, refreshToken, userData };
   };
 
   getProfile = async (userId: string) => {

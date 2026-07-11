@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { UserStatus } from "../../../generated/prisma/enums";
 
 export const getAllUsersQuerySchema = z.object({
   query: z.object({
@@ -9,10 +10,19 @@ export const getAllUsersQuerySchema = z.object({
 
     role: z.enum(["ADMIN", "LANDLORD", "TENANT"]).optional(),
 
-    status: z.enum(["ACTIVE", "BANNED"]).optional(),
+    status: z.enum(UserStatus).optional(),
 
     sortBy: z.enum(["createdAt", "name", "email"]).default("createdAt"),
 
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  }),
+});
+
+export const userStatusUpdateSchema = z.object({
+  params: z.object({
+    id: z.uuid("Invalid user id"),
+  }),
+  body: z.object({
+    status: z.enum(UserStatus),
   }),
 });

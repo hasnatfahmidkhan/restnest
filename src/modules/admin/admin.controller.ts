@@ -3,7 +3,10 @@ import type { Tnext, TReq, TRes } from "../../types";
 import catchAsync from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { adminService } from "./admin.service";
-import { getAllUsersQuerySchema } from "./admin.validation";
+import {
+  getAllUsersQuerySchema,
+  userStatusUpdateSchema,
+} from "./admin.validation";
 
 class AdminController {
   getAllUsers = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
@@ -15,6 +18,22 @@ class AdminController {
       statusCode: htppStatus.OK,
       message: "Retrieved all users",
       data: users,
+    });
+  });
+
+  updateUserStatus = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const { params, body } = userStatusUpdateSchema.parse(req);
+    const adminId = req.user?.id as string;
+    const updateStatus = await adminService.updateUserStatus(
+      params.id,
+      body.status,
+      adminId,
+    );
+
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "user status updated",
+      data: updateStatus,
     });
   });
 }
