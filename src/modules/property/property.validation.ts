@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const imageSchema = z.object({
+  url: z.url("Invalid image url."),
+  isPrimary: z.boolean().optional(),
+});
+
 export const propertyValidationSchema = z.object({
   title: z
     .string({ error: "Title is required!" })
@@ -29,6 +34,10 @@ export const propertyValidationSchema = z.object({
     if (value === undefined) return undefined;
     return Array.isArray(value) ? value : [value];
   }, z.array(z.string().trim()).optional()),
+  images: z
+    .array(imageSchema)
+    .min(1, "At least one image is required.")
+    .max(10),
 });
 
 export const createPropertySchema = z.object({
@@ -85,13 +94,12 @@ export const propertyQuerySchema = z
       .preprocess((value) => {
         if (value === undefined || value === "") return undefined;
 
-
         if (typeof value === "string") {
           try {
             const parsed = JSON.parse(value);
             return Array.isArray(parsed) ? parsed : [parsed];
           } catch {
-            return [value]; 
+            return [value];
           }
         }
 

@@ -5,7 +5,7 @@ model PropertyImage {
 
     propertyId String
     // relations
-    property   Property @relation(fields: [propertyId], references: [id])
+    property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
     createdAt DateTime @default(now())
 

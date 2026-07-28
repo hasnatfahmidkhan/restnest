@@ -1,4 +1,4 @@
-import htppStatus from "http-status";
+import httpStatus from "http-status";
 import type { Prisma } from "../../../generated/prisma/client";
 import type { PropertyWhereInput } from "../../../generated/prisma/models";
 import AppError from "../../errors/AppError";
@@ -191,7 +191,7 @@ class PropertyService {
     });
     if (!property) {
       throw new AppError(
-        htppStatus.NOT_FOUND,
+        httpStatus.NOT_FOUND,
         "Property not found. Please provide valid id.",
       );
     }
@@ -203,7 +203,30 @@ class PropertyService {
     landlordId: string,
     payload: createPropertyPayload,
   ) => {
-    const { amenityIds, ...propertyPayload } = payload;
+    const { images, amenityIds, ...propertyPayload } = payload;
+
+    const normalizedImages = images.map((image, index) => ({
+      url: image.url,
+      isPrimary: image.isPrimary ?? index === 0,
+    }));
+
+    const uniqueUrls = new Set(normalizedImages.map((img) => img.url));
+
+    if (uniqueUrls.size !== normalizedImages.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Duplicate image urls are not allowed.",
+      );
+    }
+
+    const primaryCount = normalizedImages.filter((img) => img.isPrimary).length;
+
+    if (primaryCount > 1) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Only one primary image is allowed.",
+      );
+    }
 
     // Remove duplicate amenity ids
     const uniqueAmenityIds = amenityIds ? [...new Set(amenityIds)] : [];
@@ -217,7 +240,7 @@ class PropertyService {
 
     if (!categoryExists) {
       throw new AppError(
-        htppStatus.NOT_FOUND,
+        httpStatus.NOT_FOUND,
         "Category is not found. Please provide valid category id.",
       );
     }
@@ -234,7 +257,7 @@ class PropertyService {
 
       if (amenities.length !== uniqueAmenityIds.length) {
         throw new AppError(
-          htppStatus.BAD_REQUEST,
+          httpStatus.BAD_REQUEST,
           "One or more amenity ids are invalid.",
         );
       }
@@ -263,7 +286,33 @@ class PropertyService {
           })),
         });
       }
-      return createdProperty;
+
+      await tx.propertyImage.createMany({
+        data: normalizedImages.map((image) => ({
+          propertyId: createdProperty.id,
+          url: image.url,
+          isPrimary: image.isPrimary,
+        })),
+      });
+
+      return await tx.property.findUnique({
+        where: {
+          id: createdProperty.id,
+        },
+        include: {
+          propertyAmenities: {
+            include: {
+              amenity: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+          propertyImages: true,
+        },
+      });
     });
 
     return property;
@@ -301,7 +350,7 @@ class PropertyService {
 
     if (!existsProperty) {
       throw new AppError(
-        htppStatus.NOT_FOUND,
+        httpStatus.NOT_FOUND,
         "Property not found. please provide valid id.",
       );
     }
@@ -309,7 +358,7 @@ class PropertyService {
     // Ensure the landlord owns the property
     if (existsProperty.landlordId !== landlordId) {
       throw new AppError(
-        htppStatus.FORBIDDEN,
+        httpStatus.FORBIDDEN,
         "You are not authorized to update this property.",
       );
     }
@@ -323,7 +372,7 @@ class PropertyService {
       });
 
       if (!category) {
-        throw new AppError(htppStatus.NOT_FOUND, "Category not found.");
+        throw new AppError(httpStatus.NOT_FOUND, "Category not found.");
       }
     }
 
@@ -339,7 +388,7 @@ class PropertyService {
 
       if (amenities.length !== uniqueAmenityIds.length) {
         throw new AppError(
-          htppStatus.BAD_REQUEST,
+          httpStatus.BAD_REQUEST,
           "One or more amenity ids are invalid.",
         );
       }
@@ -432,14 +481,14 @@ class PropertyService {
 
     if (!existsProperty) {
       throw new AppError(
-        htppStatus.NOT_FOUND,
+        httpStatus.NOT_FOUND,
         "Property not found. Please provide a valid property id.",
       );
     }
     // ownership validation
     if (existsProperty.landlordId !== landlordId) {
       throw new AppError(
-        htppStatus.FORBIDDEN,
+        httpStatus.FORBIDDEN,
         "You are not authorized to delete this property.",
       );
     }
