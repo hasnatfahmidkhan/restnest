@@ -1,5 +1,8 @@
 import httpStatus from "http-status";
-import { RentalRequestStatus } from "../../../generated/prisma/enums";
+import {
+  PaymentStatus,
+  RentalRequestStatus,
+} from "../../../generated/prisma/enums";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import type { TCreateRentalPayload } from "./rental.interface";
@@ -236,6 +239,78 @@ class RentalService {
     });
 
     return updatedRentalRequest;
+  };
+
+  cancelRentalRequest = async (rentalId: string, tenantId: string) => {
+    const rentalRequest = await prisma.rentalRequest.findUnique({
+      where: {
+        id: rentalId,
+      },
+      include: {
+        payment: true,
+      },
+    });
+
+    if (!rentalRequest) {
+      throw new AppError(httpStatus.NOT_FOUND, "Rental request not found.");
+    }
+
+    // Ownership check
+    if (rentalRequest.tenantId !== tenantId) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        "You are not allowed to cancel this rental request.",
+      );
+    }
+
+    // Only pending & approved can be cancelled
+    if (
+      rentalRequest.status !== RentalRequestStatus.PENDING &&
+      rentalRequest.status !== RentalRequestStatus.APPROVED
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "This rental request cannot be cancelled.",
+      );
+    }
+
+    // Paid rental cannot be cancelled
+    if (
+      rentalRequest.payment &&
+      rentalRequest.payment.status === PaymentStatus.COMPLETED
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Payment has already been completed.",
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.rentalRequest.update({
+        where: {
+          id: rentalId,
+        },
+        data: {
+          status: RentalRequestStatus.CANCELED,
+        },
+      });
+
+      if (
+        rentalRequest.payment &&
+        rentalRequest.payment.status !== PaymentStatus.COMPLETED
+      ) {
+        await tx.payment.update({
+          where: {
+            id: rentalRequest.payment.id,
+          },
+          data: {
+            status: PaymentStatus.CANCELED,
+          },
+        });
+      }
+    });
+
+    return null;
   };
 }
 

@@ -48,7 +48,7 @@ export const updateRentalRequestSchema = z.object({
 
 export const updateRentalRequestStatusSchema = z.object({
   params: z.object({
-    id: z.string().uuid("Invalid rental request ID."),
+    id: z.uuid("Invalid rental request ID."),
   }),
   body: z.object({
     status: z.enum([

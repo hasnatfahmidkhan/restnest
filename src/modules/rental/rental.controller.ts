@@ -79,6 +79,19 @@ class RentalController {
       });
     },
   );
+
+  cancelRentalRequest = catchAsync(
+    async (req: TReq, res: TRes, next: Tnext) => {
+      const tenantId = req.user?.id as string;
+      const rentalId = req.params.id as string;
+      await rentalService.cancelRentalRequest(rentalId, tenantId);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: "Updated successfully",
+        data: null,
+      });
+    },
+  );
 }
 
 export const rentalController = new RentalController();

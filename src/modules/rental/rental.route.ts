@@ -40,4 +40,10 @@ router.patch(
   rentalController.updateRentalRequestStatus,
 );
 
+router.patch(
+  "/tenant/requests/:id",
+  auth(UserRole.TENANT),
+  rentalController.cancelRentalRequest,
+);
+
 export const rentalRoute = router;
