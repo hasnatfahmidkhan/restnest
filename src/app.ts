@@ -9,6 +9,7 @@ import { adminRoute } from "./modules/admin/admin.route";
 import { amenityRoute } from "./modules/amenity/amenity.route";
 import { authRoute } from "./modules/auth/auth.route";
 import { categoryRoute } from "./modules/category/category.route";
+import { landlordRoute } from "./modules/landlord/landlord.route";
 import { paymentRoute } from "./modules/payment/payment.route";
 import { propertyRoute } from "./modules/property/property.route";
 import { rentalRoute } from "./modules/rental/rental.route";
@@ -57,6 +58,9 @@ app.use("/api/reviews", reviewRoute);
 
 // admin related apis
 app.use("/api/admin", adminRoute);
+
+// landlord stats
+app.use("/api/landlord", landlordRoute);
 
 // 2. ⚠️ THE NOT FOUND MIDDLEWARE (Catches anything that didn't match above)
 app.use(notFoundHandler);
