@@ -150,6 +150,13 @@ class PropertyService {
               },
             },
           },
+          propertyImages: {
+            select: {
+              id: true,
+              url: true,
+              isPrimary: true,
+            },
+          },
         },
         take,
         skip,
@@ -185,6 +192,13 @@ class PropertyService {
                 id: true,
               },
             },
+          },
+        },
+        propertyImages: {
+          select: {
+            id: true,
+            url: true,
+            isPrimary: true,
           },
         },
       },

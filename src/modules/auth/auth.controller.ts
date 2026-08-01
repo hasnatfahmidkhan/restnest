@@ -31,7 +31,6 @@ class AuthController {
       message: "User login successfully",
       data: {
         userData,
-        accessToken,
       },
     });
   });

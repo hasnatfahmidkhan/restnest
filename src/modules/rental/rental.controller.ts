@@ -29,10 +29,14 @@ class RentalController {
   );
 
   getRentalDetails = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
-    const id = req.user?.id as string;
+    const tenantId = req.body.tenantId as string;
     const rentalId = req.params.rentalId as string;
 
-    const rentalRequest = await rentalService.getRentalDetails(id, rentalId);
+    const rentalRequest = await rentalService.getRentalDetails(
+      tenantId,
+      rentalId,
+    );
+
     sendResponse(res, {
       statusCode: httpStatus.OK,
       message: "Retrieved rental request details successfully!",

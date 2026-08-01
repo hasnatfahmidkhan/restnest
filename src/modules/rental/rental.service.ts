@@ -42,7 +42,6 @@ class RentalService {
   };
 
   getLandlordRentalRequests = async (landlordId: string) => {
-    
     return prisma.rentalRequest.findMany({
       where: {
         property: {
@@ -89,6 +88,13 @@ class RentalService {
       },
       include: {
         property: true,
+        tenant: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
     });
 

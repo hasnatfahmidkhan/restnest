@@ -18,9 +18,9 @@ router.get(
   rentalController.getLandlordRentalRequests,
 );
 
-router.get(
+router.post(
   "/:rentalId",
-  auth(UserRole.TENANT),
+  auth(UserRole.TENANT, UserRole.LANDLORD, UserRole.ADMIN),
   validateRequest(rentalRequestParamsSchema),
   rentalController.getRentalDetails,
 );

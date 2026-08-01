@@ -8,10 +8,11 @@ export const setAuthCookies = (
   res.cookie(name, token, {
     httpOnly: true,
     secure: false,
-    sameSite: "none",
+    sameSite: "lax",
     maxAge:
       name === "accessToken"
         ? 1000 * 60 * 60 * 24 * 1
         : 1000 * 60 * 60 * 24 * 7,
+    path: "/",
   });
 };

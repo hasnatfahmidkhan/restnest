@@ -33,6 +33,9 @@ export const rentalRequestParamsSchema = z.object({
   params: z.object({
     rentalId: z.uuid("Invalid rental ID."),
   }),
+  body: z.object({
+    tenantId: z.string(),
+  }),
 });
 
 export const updateRentalRequestSchema = z.object({
