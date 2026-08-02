@@ -10,6 +10,117 @@ import {
 } from "./property.interface";
 
 class PropertyService {
+  private validateImages(
+    images?: { url: string; isPrimary?: boolean | undefined }[],
+  ) {
+    if (!images) return;
+
+    const normalizedImages = images.map((image, index) => ({
+      url: image.url,
+      isPrimary: image.isPrimary ?? index === 0,
+    }));
+
+    const uniqueUrls = new Set(normalizedImages.map((img) => img.url));
+
+    if (uniqueUrls.size !== normalizedImages.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Duplicate image urls are not allowed.",
+      );
+    }
+
+    const primaryCount = normalizedImages.filter((img) => img.isPrimary).length;
+
+    if (primaryCount > 1) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Only one primary image is allowed.",
+      );
+    }
+
+    return normalizedImages;
+  }
+
+  private async validateRelations(categoryId?: string, amenityIds?: string[]) {
+    if (categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId },
+      });
+
+      if (!category) {
+        throw new AppError(httpStatus.NOT_FOUND, "Category not found.");
+      }
+    }
+
+    if (amenityIds?.length) {
+      const uniqueAmenityIds = [...new Set(amenityIds)];
+
+      const amenities = await prisma.amenity.findMany({
+        where: {
+          id: {
+            in: uniqueAmenityIds,
+          },
+        },
+      });
+
+      if (amenities.length !== uniqueAmenityIds.length) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          "One or more amenity ids are invalid.",
+        );
+      }
+
+      return uniqueAmenityIds;
+    }
+
+    return [];
+  }
+
+  private async syncPropertyRelations(
+    tx: Prisma.TransactionClient,
+    propertyId: string,
+    amenityIds: string[],
+    images?: {
+      url: string;
+      isPrimary: boolean;
+    }[],
+  ) {
+    // Amenities
+
+    await tx.propertyAmenity.deleteMany({
+      where: {
+        propertyId,
+      },
+    });
+
+    if (amenityIds.length) {
+      await tx.propertyAmenity.createMany({
+        data: amenityIds.map((amenityId) => ({
+          propertyId,
+          amenityId,
+        })),
+      });
+    }
+
+    // Images
+
+    if (images) {
+      await tx.propertyImage.deleteMany({
+        where: {
+          propertyId,
+        },
+      });
+
+      await tx.propertyImage.createMany({
+        data: images.map((image) => ({
+          propertyId,
+          url: image.url,
+          isPrimary: image.isPrimary,
+        })),
+      });
+    }
+  }
+
   getAllProperties = async (query: TGetAllPropertiesQuery) => {
     const {
       page = 1,
@@ -217,119 +328,54 @@ class PropertyService {
     landlordId: string,
     payload: createPropertyPayload,
   ) => {
-    const { images, amenityIds, ...propertyPayload } = payload;
+    const {
+      images,
+      amenityIds,
+      categoryId,
+      description,
+      area,
+      ...propertyPayload
+    } = payload;
 
-    const normalizedImages = images.map((image, index) => ({
-      url: image.url,
-      isPrimary: image.isPrimary ?? index === 0,
-    }));
+    const normalizedImages = this.validateImages(images);
 
-    const uniqueUrls = new Set(normalizedImages.map((img) => img.url));
+    const uniqueAmenityIds = await this.validateRelations(
+      categoryId,
+      amenityIds,
+    );
 
-    if (uniqueUrls.size !== normalizedImages.length) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Duplicate image urls are not allowed.",
-      );
-    }
-
-    const primaryCount = normalizedImages.filter((img) => img.isPrimary).length;
-
-    if (primaryCount > 1) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Only one primary image is allowed.",
-      );
-    }
-
-    // Remove duplicate amenity ids
-    const uniqueAmenityIds = amenityIds ? [...new Set(amenityIds)] : [];
-
-    // Validate category
-    const categoryExists = await prisma.category.findUnique({
-      where: {
-        id: payload.categoryId,
-      },
-    });
-
-    if (!categoryExists) {
-      throw new AppError(
-        httpStatus.NOT_FOUND,
-        "Category is not found. Please provide valid category id.",
-      );
-    }
-
-    // Validate amenities
-    if (uniqueAmenityIds?.length > 0) {
-      const amenities = await prisma.amenity.findMany({
-        where: {
-          id: {
-            in: uniqueAmenityIds,
-          },
-        },
-      });
-
-      if (amenities.length !== uniqueAmenityIds.length) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          "One or more amenity ids are invalid.",
-        );
-      }
-    }
-
-    const property = await prisma.$transaction(async (tx) => {
-      const createdProperty = await tx.property.create({
+    await prisma.$transaction(async (tx) => {
+      const property = await tx.property.create({
         data: {
           landlordId,
+          categoryId,
           ...propertyPayload,
-          description: propertyPayload.description ?? null,
-          area: propertyPayload.area ?? null,
-        },
-        omit: {
-          createdAt: true,
-          updatedAt: true,
+          ...(description && { description }),
+          ...(area && { area }),
         },
       });
 
-      // Create property amenities if amenityIds are provided
-      if (uniqueAmenityIds?.length > 0) {
-        await tx.propertyAmenity.createMany({
-          data: uniqueAmenityIds.map((amenityId) => ({
-            propertyId: createdProperty.id,
-            amenityId,
-          })),
-        });
-      }
+      await this.syncPropertyRelations(
+        tx,
+        property.id,
+        uniqueAmenityIds,
+        normalizedImages,
+      );
 
-      await tx.propertyImage.createMany({
-        data: normalizedImages.map((image) => ({
-          propertyId: createdProperty.id,
-          url: image.url,
-          isPrimary: image.isPrimary,
-        })),
-      });
-
-      return await tx.property.findUnique({
+      return tx.property.findUnique({
         where: {
-          id: createdProperty.id,
+          id: property.id,
         },
         include: {
           propertyAmenities: {
             include: {
-              amenity: {
-                select: {
-                  name: true,
-                  id: true,
-                },
-              },
+              amenity: true,
             },
           },
           propertyImages: true,
         },
       });
     });
-
-    return property;
   };
 
   updateProperty = async (
@@ -349,140 +395,52 @@ class PropertyService {
       rentPrice,
       title,
       amenityIds,
-      // ...propertyPayload
+      images,
     } = payload;
 
-    // unique amenity ids
-    const uniqueAmenityIds = amenityIds ? [...new Set(amenityIds)] : [];
+    const normalizedImages = this.validateImages(images);
 
-    // Check property exists
-    const existsProperty = await prisma.property.findUnique({
-      where: {
-        id,
-      },
-    });
+    const uniqueAmenityIds = await this.validateRelations(
+      categoryId,
+      amenityIds,
+    );
 
-    if (!existsProperty) {
-      throw new AppError(
-        httpStatus.NOT_FOUND,
-        "Property not found. please provide valid id.",
-      );
-    }
-
-    // Ensure the landlord owns the property
-    if (existsProperty.landlordId !== landlordId) {
-      throw new AppError(
-        httpStatus.FORBIDDEN,
-        "You are not authorized to update this property.",
-      );
-    }
-
-    // Validate category if updating
-    if (payload.categoryId) {
-      const category = await prisma.category.findUnique({
-        where: {
-          id: payload.categoryId,
-        },
-      });
-
-      if (!category) {
-        throw new AppError(httpStatus.NOT_FOUND, "Category not found.");
-      }
-    }
-
-    // Validate amenities
-    if (uniqueAmenityIds) {
-      const amenities = await prisma.amenity.findMany({
-        where: {
-          id: {
-            in: uniqueAmenityIds,
-          },
-        },
-      });
-
-      if (amenities.length !== uniqueAmenityIds.length) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          "One or more amenity ids are invalid.",
-        );
-      }
-    }
-
-    const data: Prisma.PropertyUpdateInput = {
-      ...(title && { title }),
-      ...(description && { description }),
-      ...(address && { address }),
-      ...(city && { city }),
-      ...(division && { division }),
-      ...(rentPrice && { rentPrice }),
-      ...(area && { area }),
-      ...(bedrooms && { bedrooms }),
-      ...(bathrooms && { bathrooms }),
-      ...(categoryId && {
-        category: {
-          connect: {
-            id: categoryId,
-          },
-        },
-      }),
-    };
-
-    const updatePropertyTransaction = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       await tx.property.update({
         where: {
           id,
         },
-        data,
-        omit: {
-          createdAt: true,
-          updatedAt: true,
-        },
-        include: {
-          propertyAmenities: {
-            select: {
-              amenity: {
-                select: {
-                  name: true,
-                  id: true,
-                },
-              },
-            },
-          },
+        data: {
+          ...(address && { address }),
+          ...(city && { city }),
+          ...(description && { description }),
+          ...(division && { division }),
+          ...(rentPrice && { rentPrice }),
+          ...(title && { title }),
         },
       });
 
-      if (uniqueAmenityIds) {
-        await tx.propertyAmenity.deleteMany({
-          where: {
-            propertyId: id,
-          },
-        });
-      }
+      await this.syncPropertyRelations(
+        tx,
+        id,
+        uniqueAmenityIds,
+        normalizedImages,
+      );
 
-      if (amenityIds && amenityIds?.length > 0) {
-        await tx.propertyAmenity.createMany({
-          data: amenityIds.map((amenityId) => ({
-            propertyId: id,
-            amenityId,
-          })),
-        });
-      }
-
-      return await tx.property.findUnique({
+      return tx.property.findUnique({
         where: {
           id,
         },
         include: {
           propertyAmenities: {
-            select: {
+            include: {
               amenity: true,
             },
           },
+          propertyImages: true,
         },
       });
     });
-
-    return updatePropertyTransaction;
   };
 
   deleteProperty = async (landlordId: string, id: string) => {
