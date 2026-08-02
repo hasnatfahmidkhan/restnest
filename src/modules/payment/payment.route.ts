@@ -20,8 +20,9 @@ router.post(
 router.post("/confirm", paymentController.handleWebhook);
 
 router.get("/", auth(UserRole.TENANT), paymentController.paymentHistory);
+
 router.get(
-  "/:id",
+  "/session/:id",
   auth(UserRole.TENANT),
   validateRequest(getPaymentDetailsSchema),
   paymentController.paymentDetails,

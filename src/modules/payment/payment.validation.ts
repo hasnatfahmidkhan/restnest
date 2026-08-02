@@ -10,7 +10,7 @@ export const createCheckoutSessionSchema = z.object({
 
 export const getPaymentDetailsSchema = z.object({
   params: z.object({
-    id: z.uuid({ message: "Invalid Payment ID format. Must be a UUID" }),
+    id: z.string({ message: "Invalid Payment ID format. Must be a UUID" }),
   }),
 });
 

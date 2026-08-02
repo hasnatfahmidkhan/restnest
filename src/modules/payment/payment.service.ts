@@ -283,6 +283,8 @@ class PaymentService {
         status: true,
         paidAt: true,
         transactionId: true,
+        sessionId: true,
+        rentalRequestId: true,
         rentalRequest: {
           select: {
             status: true,
@@ -310,10 +312,10 @@ class PaymentService {
   };
 
   // get payment details
-  getPaymentDetails = async (tenantId: string, id: string) => {
+  getPaymentDetails = async (tenantId: string, sessionId: string) => {
     const payment = await prisma.payment.findUnique({
       where: {
-        id,
+        sessionId,
       },
       include: {
         rentalRequest: {

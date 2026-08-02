@@ -20,6 +20,13 @@ class RentalService {
         leaseMonths: true,
         endDate: true,
         createdAt: true,
+        tenant: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         property: {
           select: {
             id: true,
@@ -39,6 +46,9 @@ class RentalService {
             },
           },
         },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
     return rentalRequests;

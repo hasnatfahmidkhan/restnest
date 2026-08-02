@@ -42,8 +42,8 @@ class PaymentController {
 
   paymentDetails = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const tenantId = req.user?.id as string;
-    const paymentId = req.params.id as string;
-    const payment = await paymentService.getPaymentDetails(tenantId, paymentId);
+    const sessionId = req.params.id as string;
+    const payment = await paymentService.getPaymentDetails(tenantId, sessionId);
     sendResponse(res, {
       statusCode: htppStatus.OK,
       message: "Retrieved payment details",

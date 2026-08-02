@@ -6,6 +6,7 @@ import { reviewService } from "./review.service";
 import {
   createReviewSchema,
   getPropertyReviewsSchema,
+  updateReviewSchema,
 } from "./review.validation";
 
 class ReviewController {
@@ -32,6 +33,32 @@ class ReviewController {
       });
     },
   );
+
+  getMyReviews = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const tenantId = req.user?.id as string;
+    const reviews = await reviewService.getMyReviews(tenantId);
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Retrieved my reviews",
+      data: reviews,
+    });
+  });
+
+  updateReview = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const { params, body } = updateReviewSchema.parse(req);
+    const tenantId = req.user?.id as string;
+
+    const updatedReview = await reviewService.updateReview(
+      params.id,
+      body,
+      tenantId,
+    );
+    sendResponse(res, {
+      statusCode: htppStatus.OK,
+      message: "Review updated successfully",
+      data: updatedReview,
+    });
+  });
 }
 
 export const reviewController = new ReviewController();

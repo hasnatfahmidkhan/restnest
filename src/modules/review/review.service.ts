@@ -43,7 +43,10 @@ class ReviewService {
       existsRental.status !== RentalRequestStatus.COMPLETED ||
       existsRental.payment?.status !== PaymentStatus.COMPLETED
     ) {
-      throw new AppError(htppStatus.UNAUTHORIZED, "Access forbidden");
+      throw new AppError(
+        htppStatus.UNAUTHORIZED,
+        "Access forbidden, rental is not completed yet!",
+      );
     }
 
     // check tenant already review it or not
@@ -119,6 +122,95 @@ class ReviewService {
       },
       reviews,
     };
+  };
+
+  getMyReviews = async (tenantId: string) => {
+    const reviews = await prisma.review.findMany({
+      where: {
+        rentalRequest: {
+          tenantId,
+        },
+      },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        rentalRequest: {
+          select: {
+            property: {
+              select: {
+                id: true,
+                title: true,
+                propertyImages: {
+                  where: {
+                    isPrimary: true,
+                  },
+                  select: {
+                    id: true,
+                    url: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // check if reviews is empty
+    if (reviews.length === 0) {
+      throw new AppError(htppStatus.NOT_FOUND, "No reviews found");
+    }
+
+    // return reviews
+    return reviews;
+  };
+
+  // update review
+  updateReview = async (
+    reviewId: string,
+    payload: reviewPayload,
+    tenantId: string,
+  ) => {
+    const { rating, comment } = payload;
+    // check review exists
+    const review = await prisma.review.findUnique({
+      where: {
+        id: reviewId,
+      },
+      include: {
+        rentalRequest: {
+          select: {
+            tenantId: true,
+          },
+        },
+      },
+    });
+
+    if (!review) {
+      throw new AppError(htppStatus.NOT_FOUND, "Review not found");
+    }
+
+    if (review.rentalRequest.tenantId !== tenantId) {
+      throw new AppError(htppStatus.UNAUTHORIZED, "Access forbidden");
+    }
+
+    // update review
+    const updatedReview = await prisma.review.update({
+      where: {
+        id: reviewId,
+      },
+      data: {
+        rating,
+        ...(comment && { comment }),
+      },
+    });
+
+    return updatedReview;
   };
 }
 
