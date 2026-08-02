@@ -17,6 +17,12 @@ router.get(
 );
 
 router.get(
+  "/properties/:id",
+  auth(UserRole.ADMIN),
+  adminController.getSignleProperty,
+);
+
+router.get(
   "/rentals",
   auth(UserRole.ADMIN),
   validateRequest(getAllRentalsQuerySchema),

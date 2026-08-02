@@ -240,6 +240,41 @@ class AdminService {
     };
   };
 
+  getSignleProperty = async (id: string) => {
+    const property = await prisma.property.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        propertyAmenities: {
+          select: {
+            amenity: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+          },
+        },
+        propertyImages: {
+          select: {
+            id: true,
+            url: true,
+            isPrimary: true,
+          },
+        },
+      },
+    });
+    if (!property) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        "Property not found. Please provide valid id.",
+      );
+    }
+
+    return property;
+  };
+
   getAllRentals = async (query: TGetAllRentalsQuery) => {
     const {
       page,

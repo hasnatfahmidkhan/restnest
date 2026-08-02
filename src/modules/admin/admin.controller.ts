@@ -50,6 +50,16 @@ class AdminController {
     });
   });
 
+  getSignleProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const id = req.params.id as string;
+    const property = await adminService.getSignleProperty(id);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Property retrieved successfully.",
+      data: property,
+    });
+  });
+
   getAllRentals = catchAsync(async (req, res) => {
     const parsedQuery = getAllRentalsQuerySchema.parse({
       query: req.query,

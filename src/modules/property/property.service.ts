@@ -1,5 +1,5 @@
 import httpStatus from "http-status";
-import type { Prisma } from "../../../generated/prisma/client";
+import { type Prisma } from "../../../generated/prisma/client";
 import type { PropertyWhereInput } from "../../../generated/prisma/models";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
