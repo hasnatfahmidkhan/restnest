@@ -7,8 +7,8 @@ export const setAuthCookies = (
 ) => {
   res.cookie(name, token, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
     maxAge:
       name === "accessToken"
         ? 1000 * 60 * 60 * 24 * 1
