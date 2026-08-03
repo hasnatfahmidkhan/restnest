@@ -31,6 +31,8 @@ class AuthController {
       message: "User login successfully",
       data: {
         userData,
+        accessToken,
+        refreshToken,
       },
     });
   });
@@ -43,6 +45,24 @@ class AuthController {
       statusCode: htppStatus.OK,
       message: "User profile retrieved successfully",
       data: user,
+    });
+  });
+
+  // get new access token
+  getNewAccessToken = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const accessToken = await authService.getNewAccessToken(
+      req.user?.id as string,
+    );
+
+    setAuthCookies(res, "accessToken", accessToken);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: htppStatus.OK,
+      message: "New access token generated successfully",
+      data: {
+        accessToken,
+      },
     });
   });
 }

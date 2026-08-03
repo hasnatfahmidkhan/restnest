@@ -131,6 +131,33 @@ class AuthService {
 
     return user;
   };
+
+  getNewAccessToken = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, "User not found.");
+    }
+
+    const jwtPayload = {
+      id: user?.id!,
+      email: user?.email!,
+      role: user?.role!,
+      status: user?.status!,
+    };
+
+    const accessToken = jwtUtils.createJWTToken(
+      jwtPayload,
+      config.jwt_access_secret,
+      config.jwt_access_expires_in as SignOptions,
+    );
+
+    return accessToken;
+  };
 }
 
 export const authService = new AuthService();

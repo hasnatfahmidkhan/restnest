@@ -21,4 +21,10 @@ router.get(
   authController.getProfile,
 );
 
+router.post(
+  "/refresh-token",
+  auth(UserRole.TENANT, UserRole.LANDLORD, UserRole.ADMIN),
+  authController.getNewAccessToken,
+);
+
 export const authRoute = router;
