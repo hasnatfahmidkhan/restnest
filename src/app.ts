@@ -26,11 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      "https://restnest-frontend.onrender.com",
-      "http://localhost:3000",
-      config.app_url,
-    ],
+    origin: config.app_url,
     credentials: true,
   }),
 );
