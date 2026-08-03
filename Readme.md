@@ -55,10 +55,21 @@ A secure and scalable **Rental Property Management REST API** built with **Node.
 
 ### 👨‍💼 Admin Features
 
+* Dashboard statistics (Users, Properties, Rentals, Payments)
 * View all users
 * Ban / Unban users
 * View all properties
+* View single property
 * View all rental requests
+
+### 🏢 Landlord Features
+
+* Dashboard statistics (Properties overview, Rental requests, Revenue, Average rating)
+
+### 🧑‍🤝‍🧑 Tenant Features
+
+* Dashboard statistics (Requests overview, Active rentals, Total amount paid)
+* View recent rental requests
 
 ### ⏰ Scheduled Jobs
 
@@ -78,7 +89,7 @@ A secure and scalable **Rental Property Management REST API** built with **Node.
 ### Database
 
 * PostgreSQL
-* Prisma ORM
+* Prisma ORM (Multi-file Schema)
 
 ### Authentication
 
@@ -101,6 +112,7 @@ A secure and scalable **Rental Property Management REST API** built with **Node.
 * CORS
 * HTTP Status
 * dotenv
+* tsup (for building)
 
 ---
 
@@ -113,22 +125,24 @@ src
 ├── server.ts
 │
 ├── config
+├── cron
 ├── errors
 ├── lib
 ├── middlewares
-├── routes
+├── types
 ├── utils
 │
 └── modules
-    ├── auth
-    ├── user
-    ├── category
+    ├── admin
     ├── amenity
+    ├── auth
+    ├── category
+    ├── landlord
+    ├── payment
     ├── property
     ├── rental
-    ├── payment
     ├── review
-    └── admin
+    └── tenant
 ```
 
 ---
@@ -136,12 +150,13 @@ src
 # 🗄️ Database Design
 
 ```
-User
+User (Admin / Landlord / Tenant)
 │
 ├── Profile
 ├── Property
+│      ├── Category
+│      ├── Amenity (via PropertyAmenity)
 │      ├── PropertyImage
-│      ├── PropertyAmenity
 │      └── RentalRequest
 │               │
 │               ├── Payment
@@ -202,22 +217,27 @@ npm install
 Create a `.env` file and configure:
 
 ```env
-PORT=5000
-
+# Database Configuration
 DATABASE_URL=
 
-JWT_ACCESS_SECRET=
-JWT_ACCESS_EXPIRES_IN=
+# Server Configuration
+PORT=5000
+NODE_ENV=development
 
+# Frontend Application URL
+APP_URL=
+
+# Security & Authentication
+BCRYPT_SALT_ROUNDS=
+JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
+JWT_ACCESS_EXPIRES_IN=
 JWT_REFRESH_EXPIRES_IN=
 
-BCRYPT_SALT_ROUNDS=
-
+# Stripe Payments
+STRIPE_PRICE_ID=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET_KEY=
-
-APP_URL=
 ```
 
 ---
@@ -253,6 +273,8 @@ npm start
 * Rental Requests
 * Payments
 * Reviews
+* Landlord
+* Tenant
 * Admin
 
 ---
@@ -305,4 +327,4 @@ This project is licensed under the MIT License.
 
 **Hasnat Fahmid Khan**
 
-Backend Developer | MERN Stack Developer
+Backend Developer | Full Stack Developer
