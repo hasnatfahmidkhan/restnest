@@ -2,7 +2,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Application } from "express";
 import httpStatus from "http-status";
-import config from "./config";
 import { globalErrorHandler } from "./middlewares/globalError";
 import { notFoundHandler } from "./middlewares/notFound";
 import { adminRoute } from "./modules/admin/admin.route";
@@ -14,8 +13,8 @@ import { paymentRoute } from "./modules/payment/payment.route";
 import { propertyRoute } from "./modules/property/property.route";
 import { rentalRoute } from "./modules/rental/rental.route";
 import { reviewRoute } from "./modules/review/review.route";
-import type { TReq, TRes } from "./types";
 import { tenantRoute } from "./modules/tenant/tenant.route";
+import type { TReq, TRes } from "./types";
 const app: Application = express();
 
 app.use("/api/payments/confirm", express.raw({ type: "application/json" }));
@@ -26,7 +25,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: config.app_url,
+    origin: [
+      "https://restnest-frontend.onrender.com/",
+      "http://localhost:3000",
+    ],
     credentials: true,
   }),
 );
