@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Application } from "express";
 import httpStatus from "http-status";
+import config from "./config";
 import { globalErrorHandler } from "./middlewares/globalError";
 import { notFoundHandler } from "./middlewares/notFound";
 import { adminRoute } from "./modules/admin/admin.route";
@@ -28,6 +29,7 @@ app.use(
     origin: [
       "https://restnest-frontend.onrender.com",
       "http://localhost:3000",
+      config.app_url,
     ],
     credentials: true,
   }),
