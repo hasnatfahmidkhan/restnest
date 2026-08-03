@@ -407,11 +407,12 @@ class PropertyService {
 
     await prisma.$transaction(async (tx) => {
       await tx.property.update({
-        where: {
-          id,
-        },
+        where: { id },
         data: {
+          ...(area && { area }),
           ...(address && { address }),
+          ...(bathrooms && { bathrooms }),
+          ...(bedrooms && { bedrooms }),
           ...(city && { city }),
           ...(description && { description }),
           ...(division && { division }),
