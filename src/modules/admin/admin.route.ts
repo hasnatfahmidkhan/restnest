@@ -10,6 +10,8 @@ import {
 } from "./admin.validation";
 
 const router = Router();
+router.get("/stats", auth(UserRole.ADMIN), adminController.dashboardStats);
+
 router.get(
   "/properties",
   auth(UserRole.ADMIN),

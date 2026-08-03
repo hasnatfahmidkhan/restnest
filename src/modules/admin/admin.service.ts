@@ -1,5 +1,7 @@
 import httpStatus from "http-status";
 import {
+  PaymentStatus,
+  RentalRequestStatus,
   UserRole,
   UserStatus,
   type Prisma,
@@ -13,6 +15,163 @@ import type {
 } from "./admin.interface";
 
 class AdminService {
+  dashboardStats = async () => {
+    const [
+      totalUsers,
+      totalLandlords,
+      totalTenants,
+
+      totalProperties,
+      availableProperties,
+      occupiedProperties,
+
+      totalRentals,
+      pendingRentals,
+      approvedRentals,
+      activeRentals,
+      completedRentals,
+      rejectedRentals,
+      cancelledRentals,
+
+      totalPayments,
+      completedPayments,
+      pendingPayments,
+      failedPayments,
+
+      totalRevenue,
+    ] = await Promise.all([
+      // Users
+      prisma.user.count(),
+
+      prisma.user.count({
+        where: {
+          role: UserRole.LANDLORD,
+        },
+      }),
+
+      prisma.user.count({
+        where: {
+          role: UserRole.TENANT,
+        },
+      }),
+
+      // Properties
+      prisma.property.count(),
+
+      prisma.property.count({
+        where: {
+          isAvailable: true,
+        },
+      }),
+
+      prisma.property.count({
+        where: {
+          isAvailable: false,
+        },
+      }),
+
+      // Rentals
+      prisma.rentalRequest.count(),
+
+      prisma.rentalRequest.count({
+        where: {
+          status: RentalRequestStatus.PENDING,
+        },
+      }),
+
+      prisma.rentalRequest.count({
+        where: {
+          status: RentalRequestStatus.APPROVED,
+        },
+      }),
+
+      prisma.rentalRequest.count({
+        where: {
+          status: RentalRequestStatus.ACTIVE,
+        },
+      }),
+
+      prisma.rentalRequest.count({
+        where: {
+          status: RentalRequestStatus.COMPLETED,
+        },
+      }),
+
+      prisma.rentalRequest.count({
+        where: {
+          status: RentalRequestStatus.REJECTED,
+        },
+      }),
+
+      prisma.rentalRequest.count({
+        where: {
+          status: RentalRequestStatus.CANCELED,
+        },
+      }),
+
+      // Payments
+      prisma.payment.count(),
+
+      prisma.payment.count({
+        where: {
+          status: PaymentStatus.COMPLETED,
+        },
+      }),
+
+      prisma.payment.count({
+        where: {
+          status: PaymentStatus.PENDING,
+        },
+      }),
+
+      prisma.payment.count({
+        where: {
+          status: PaymentStatus.FAILED,
+        },
+      }),
+
+      prisma.payment.aggregate({
+        where: {
+          status: PaymentStatus.COMPLETED,
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+    ]);
+
+    return {
+      users: {
+        total: totalUsers,
+        landlords: totalLandlords,
+        tenants: totalTenants,
+      },
+
+      properties: {
+        total: totalProperties,
+        available: availableProperties,
+        occupied: occupiedProperties,
+      },
+
+      rentals: {
+        total: totalRentals,
+        pending: pendingRentals,
+        approved: approvedRentals,
+        active: activeRentals,
+        completed: completedRentals,
+        rejected: rejectedRentals,
+        cancelled: cancelledRentals,
+      },
+
+      payments: {
+        total: totalPayments,
+        completed: completedPayments,
+        pending: pendingPayments,
+        failed: failedPayments,
+        revenue: totalRevenue._sum.amount ?? 0,
+      },
+    };
+  };
   getAllUsers = async (query: adminQuery) => {
     const { page, limit, searchTerm, role, status, sortBy, sortOrder } = query;
 

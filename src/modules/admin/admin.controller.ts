@@ -11,6 +11,16 @@ import {
 } from "./admin.validation";
 
 class AdminController {
+  dashboardStats = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
+    const stats = await adminService.dashboardStats();
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Dashboard statistics retrieved successfully.",
+      data: stats,
+    });
+  });
+
   getAllUsers = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const parsedQeury = getAllUsersQuerySchema.parse({
       query: req.query,
