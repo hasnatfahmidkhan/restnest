@@ -26,7 +26,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      "https://restnest-frontend.onrender.com/",
+      "https://restnest-frontend.onrender.com",
       "http://localhost:3000",
     ],
     credentials: true,
