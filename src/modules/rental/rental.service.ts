@@ -55,7 +55,7 @@ class RentalService {
   };
 
   getLandlordRentalRequests = async (landlordId: string) => {
-    return prisma.rentalRequest.findMany({
+    const rentalRequests = await prisma.rentalRequest.findMany({
       where: {
         property: {
           landlordId,
@@ -91,6 +91,8 @@ class RentalService {
         createdAt: "desc",
       },
     });
+    console.log("landlord renatal request", rentalRequests);
+    return rentalRequests;
   };
 
   getRentalDetails = async (tenantId: string, rentalId: string) => {
