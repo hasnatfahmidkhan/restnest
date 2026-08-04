@@ -162,9 +162,9 @@ class ReviewService {
     });
 
     // check if reviews is empty
-    if (reviews.length === 0) {
-      throw new AppError(htppStatus.NOT_FOUND, "No reviews found");
-    }
+    // if (reviews.length === 0) {
+    //   throw new AppError(htppStatus.NOT_FOUND, "No reviews found");
+    // }
 
     // return reviews
     return reviews;
