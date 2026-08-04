@@ -16,7 +16,7 @@ const auth = (...requiredRoles: UserRole[]) =>
       : req.headers.authorization?.startsWith("Bearer ")
         ? req.headers.authorization.split(" ")[1]
         : req.headers.authorization;
-    console.log("auth token:", token);
+
     // 2. check if token exists
     if (!token) {
       throw new AppError(httpStatus.UNAUTHORIZED, "You are not authenticated!");
@@ -27,8 +27,6 @@ const auth = (...requiredRoles: UserRole[]) =>
       token,
       config.jwt_access_secret,
     );
-
-    console.log("decoded token", decoded);
 
     // check user exist
     const existingUser = await prisma.user.findUnique({

@@ -91,7 +91,7 @@ class RentalService {
         createdAt: "desc",
       },
     });
-    console.log("landlord renatal request: ", rentalRequests);
+
     return rentalRequests;
   };
 
