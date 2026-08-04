@@ -19,6 +19,7 @@ class RentalController {
   getLandlordRentalRequests = catchAsync(
     async (req: TReq, res: TRes, next: Tnext) => {
       const id = req.user?.id as string;
+      console.log("landlordID: ", id);
       const rentals = await rentalService.getLandlordRentalRequests(id);
       sendResponse(res, {
         statusCode: httpStatus.OK,
