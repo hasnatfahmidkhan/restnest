@@ -473,6 +473,29 @@ class PropertyService {
     });
     return null;
   };
+
+  getPopularLocations = async () => {
+    const locations = await prisma.property.groupBy({
+      by: ["city"],
+      where: {
+        isAvailable: true,
+      },
+      _count: {
+        id: true,
+      },
+      orderBy: {
+        _count: {
+          id: "desc",
+        },
+      },
+      take: 3,
+    });
+
+    return locations.map((location) => ({
+      location: location.city,
+      propertyCount: location._count.id,
+    }));
+  };
 }
 
 export const propertyService = new PropertyService();

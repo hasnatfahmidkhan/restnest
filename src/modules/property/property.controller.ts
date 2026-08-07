@@ -1,4 +1,4 @@
-import htppStatus from "http-status";
+import httpStatus from "http-status";
 import type { Tnext, TReq, TRes } from "../../types";
 import catchAsync from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -10,7 +10,7 @@ class PropertyController {
     const parsed = propertyQuerySchema.parse(req.query);
     const properties = await propertyService.getAllProperties(parsed);
     sendResponse(res, {
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "Retrieved all properties successfully",
       data: properties,
     });
@@ -20,7 +20,7 @@ class PropertyController {
     const id = req.params.id as string;
     const property = await propertyService.getSignleProperty(id);
     sendResponse(res, {
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "Property retrieved successfully.",
       data: property,
     });
@@ -30,7 +30,7 @@ class PropertyController {
     const landlordId = req.user?.id as string;
     const property = await propertyService.createProperty(landlordId, req.body);
     sendResponse(res, {
-      statusCode: htppStatus.CREATED,
+      statusCode: httpStatus.CREATED,
       message: "Property created successfully",
       data: property,
     });
@@ -46,7 +46,7 @@ class PropertyController {
     );
 
     sendResponse(res, {
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "Property updated successfully.",
       data: updateProperty,
     });
@@ -57,11 +57,21 @@ class PropertyController {
     const propertyId = req.params.propertyId as string;
     await propertyService.deleteProperty(landlordId, propertyId);
     sendResponse(res, {
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "Property deleted successfully",
       data: null,
     });
   });
+
+  getPopularLocations = catchAsync(async (req, res) => {
+  const locations = await propertyService.getPopularLocations();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Popular locations retrieved successfully",
+    data: locations,
+  });
+});
 }
 
 export const propertyController = new PropertyController();

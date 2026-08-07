@@ -18,6 +18,11 @@ router.get(
   propertyController.getAllProperties,
 );
 
+router.get(
+  "/properties/popular-locations",
+  propertyController.getPopularLocations,
+);
+
 // get single property
 router.get(
   "/properties/:id",
