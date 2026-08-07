@@ -288,7 +288,7 @@ class PropertyService {
     };
   };
 
-  getSignleProperty = async (id: string) => {
+  getSingleProperty = async (id: string) => {
     const property = await prisma.property.findUnique({
       where: {
         id,
@@ -299,8 +299,8 @@ class PropertyService {
           select: {
             amenity: {
               select: {
-                name: true,
                 id: true,
+                name: true,
               },
             },
           },
@@ -314,6 +314,7 @@ class PropertyService {
         },
       },
     });
+
     if (!property) {
       throw new AppError(
         httpStatus.NOT_FOUND,
@@ -321,7 +322,65 @@ class PropertyService {
       );
     }
 
-    return property;
+    const recommendedProperties = await prisma.property.findMany({
+      where: {
+        id: {
+          not: property.id,
+        },
+        isAvailable: true,
+        OR: [
+          {
+            city: property.city,
+            categoryId: property.categoryId,
+          },
+          {
+            city: property.city,
+          },
+          {
+            categoryId: property.categoryId,
+          },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        rentPrice: true,
+        city: true,
+        division: true,
+        bedrooms: true,
+        bathrooms: true,
+        area: true,
+
+        propertyImages: {
+          where: {
+            isPrimary: true,
+          },
+          select: {
+            id: true,
+            url: true,
+            isPrimary: true,
+          },
+        },
+
+        propertyAmenities: {
+          select: {
+            amenity: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      take: 6,
+    });
+
+    return {
+      property,
+      recommendedProperties,
+    };
   };
 
   createProperty = async (

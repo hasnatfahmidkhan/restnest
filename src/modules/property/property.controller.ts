@@ -18,7 +18,7 @@ class PropertyController {
 
   getSignleProperty = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const id = req.params.id as string;
-    const property = await propertyService.getSignleProperty(id);
+    const property = await propertyService.getSingleProperty(id);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       message: "Property retrieved successfully.",
@@ -64,14 +64,14 @@ class PropertyController {
   });
 
   getPopularLocations = catchAsync(async (req, res) => {
-  const locations = await propertyService.getPopularLocations();
+    const locations = await propertyService.getPopularLocations();
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    message: "Popular locations retrieved successfully",
-    data: locations,
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Popular locations retrieved successfully",
+      data: locations,
+    });
   });
-});
 }
 
 export const propertyController = new PropertyController();
