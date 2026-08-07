@@ -27,4 +27,6 @@ router.post(
   authController.getNewAccessToken,
 );
 
+router.post("/google", authController.googleLogin);
+
 export const authRoute = router;

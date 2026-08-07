@@ -15,4 +15,5 @@ export default {
   node_env: process.env.NODE_ENV!,
   stripe_secret_key: process.env.STRIPE_SECRET_KEY!,
   stripe_webhook_secret_key: process.env.STRIPE_WEBHOOK_SECRET_KEY!,
+  google_client_id: process.env.GOOGLE_CLIENT_ID!,
 };

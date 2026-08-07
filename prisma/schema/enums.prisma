@@ -24,3 +24,8 @@ enum PaymentStatus {
     FAILED
     CANCELED
 }
+
+enum AuthProvider {
+    GOOGLE
+    CREDENTIAL
+}

@@ -1,4 +1,4 @@
-import htppStatus from "http-status";
+import httpStatus from "http-status";
 import type { Tnext, TReq, TRes } from "../../types";
 import catchAsync from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -10,7 +10,7 @@ class AuthController {
     const user = await authService.registerUser(req.body);
     sendResponse(res, {
       success: true,
-      statusCode: htppStatus.CREATED,
+      statusCode: httpStatus.CREATED,
       message: "user registered successfully",
       data: user,
     });
@@ -27,7 +27,7 @@ class AuthController {
 
     sendResponse(res, {
       success: true,
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "User login successfully",
       data: {
         userData,
@@ -42,7 +42,7 @@ class AuthController {
     const user = await authService.getProfile(req.user?.id as string);
     sendResponse(res, {
       success: true,
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "User profile retrieved successfully",
       data: user,
     });
@@ -58,10 +58,30 @@ class AuthController {
 
     sendResponse(res, {
       success: true,
-      statusCode: htppStatus.OK,
+      statusCode: httpStatus.OK,
       message: "New access token generated successfully",
       data: {
         accessToken,
+      },
+    });
+  });
+
+  googleLogin = catchAsync(async (req: TReq, res: TRes) => {
+    const payload = req.body;
+
+    const result = await authService.googleLogin(payload);
+    const { accessToken, refreshToken } = result;
+
+    setAuthCookies(res, "accessToken", accessToken);
+    setAuthCookies(res, "refreshToken", refreshToken);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "User logged in successfully",
+      data: {
+        accessToken,
+        refreshToken,
       },
     });
   });
