@@ -14,6 +14,7 @@ import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import type {
   IGoogleLoginPayload,
+  IUpdateProfilePayload,
   loginUserPayload,
   registerUserPayload,
 } from "./auth.interface";
@@ -289,6 +290,71 @@ class AuthService {
       accessToken,
       refreshToken,
     };
+  };
+
+  updateProfile = async (userId: string, payload: IUpdateProfilePayload) => {
+    const { name, phone, profilePhoto, bio } = payload;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, "User not found.");
+    }
+
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          ...(name !== undefined && { name }),
+          ...(phone !== undefined && { phone }),
+        },
+      });
+
+      await tx.profile.update({
+        where: {
+          userId,
+        },
+        data: {
+          ...(profilePhoto !== undefined && { profilePhoto }),
+          ...(bio !== undefined && { bio }),
+        },
+      });
+
+      return tx.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          status: true,
+          role: true,
+          profile: {
+            select: {
+              id: true,
+              profilePhoto: true,
+              bio: true,
+              userId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      });
+    });
+
+    return updatedUser;
   };
 }
 

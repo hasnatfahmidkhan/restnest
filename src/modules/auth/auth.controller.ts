@@ -85,6 +85,18 @@ class AuthController {
       },
     });
   });
+
+  updateProfile = catchAsync(async (req: TReq, res: TRes) => {
+    const userId = req.user!.id;
+
+    const result = await authService.updateProfile(userId, req.body);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Profile updated successfully",
+      data: result,
+    });
+  });
 }
 
 export const authController = new AuthController();

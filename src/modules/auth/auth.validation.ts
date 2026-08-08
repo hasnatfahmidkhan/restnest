@@ -18,8 +18,6 @@ export const loginUserSchema = z.object({
   body: loginBodySchema,
 });
 
-
-
 export const registerUserSchema = z.object({
   body: loginBodySchema.extend({
     profilePhoto: z.url("Profile photo must be a valid URL"),
@@ -30,6 +28,32 @@ export const registerUserSchema = z.object({
           message: "Role must be either TENANT or LANDLORD",
         }),
       })
+      .optional(),
+  }),
+});
+
+export const updateProfileSchema = z.object({
+  body: z.object({
+    name: z
+      .string()
+      .trim()
+      .min(3, "Name must be at least 3 characters.")
+      .max(100, "Name cannot exceed 100 characters.")
+      .optional(),
+
+    phone: z
+      .string()
+      .trim()
+      .min(11, "Phone number must be at least 10 characters.")
+      .max(20, "Phone number cannot exceed 20 characters.")
+      .optional(),
+
+    profilePhoto: z.url("Invalid profile photo URL.").optional(),
+
+    bio: z
+      .string()
+      .trim()
+      .max(500, "Bio cannot exceed 500 characters.")
       .optional(),
   }),
 });

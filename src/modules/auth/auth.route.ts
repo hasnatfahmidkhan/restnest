@@ -3,7 +3,11 @@ import { UserRole } from "../../../generated/prisma/enums";
 import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import { authController } from "./auth.controller";
-import { loginUserSchema, registerUserSchema } from "./auth.validation";
+import {
+  loginUserSchema,
+  registerUserSchema,
+  updateProfileSchema,
+} from "./auth.validation";
 
 const router = Router();
 
@@ -28,5 +32,12 @@ router.post(
 );
 
 router.post("/google", authController.googleLogin);
+
+router.patch(
+  "/profile",
+  auth(UserRole.TENANT, UserRole.LANDLORD, UserRole.ADMIN),
+  validateRequest(updateProfileSchema),
+  authController.updateProfile,
+);
 
 export const authRoute = router;

@@ -7,3 +7,10 @@ export type loginUserPayload = z.infer<typeof loginBodySchema>;
 export interface IGoogleLoginPayload {
   idToken: string;
 }
+
+export interface IUpdateProfilePayload {
+  name?: string;
+  phone?: string;
+  profilePhoto?: string;
+  bio?: string;
+}
