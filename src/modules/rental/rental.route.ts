@@ -5,18 +5,23 @@ import validateRequest from "../../middlewares/validateRequest";
 import { rentalController } from "./rental.controller";
 import {
   createRentalRequestSchema,
-  getLandlordRentalRequestsSchema,
+  getRequestsSchema,
   rentalRequestParamsSchema,
   updateRentalRequestStatusSchema,
 } from "./rental.validation";
 
 const router = Router();
 
-router.get("/", auth(UserRole.TENANT), rentalController.getMyRentals);
+router.get(
+  "/",
+  auth(UserRole.TENANT),
+  validateRequest(getRequestsSchema),
+  rentalController.getMyRentals,
+);
 router.get(
   "/landlord",
   auth(UserRole.LANDLORD),
-  validateRequest(getLandlordRentalRequestsSchema),
+  validateRequest(getRequestsSchema),
   rentalController.getLandlordRentalRequests,
 );
 

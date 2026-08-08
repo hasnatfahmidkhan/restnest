@@ -58,7 +58,7 @@ export const updateRentalRequestStatusSchema = z.object({
   }),
 });
 
-export const getLandlordRentalRequestsSchema = z.object({
+export const getRequestsSchema = z.object({
   query: z.object({
     searchTerm: z.string().trim().optional(),
 
@@ -78,3 +78,5 @@ export const getLandlordRentalRequestsSchema = z.object({
     limit: z.coerce.number().int().min(1).max(50).default(10),
   }),
 });
+
+
