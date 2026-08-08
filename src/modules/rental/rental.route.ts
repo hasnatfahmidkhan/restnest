@@ -5,6 +5,7 @@ import validateRequest from "../../middlewares/validateRequest";
 import { rentalController } from "./rental.controller";
 import {
   createRentalRequestSchema,
+  getLandlordRentalRequestsSchema,
   rentalRequestParamsSchema,
   updateRentalRequestStatusSchema,
 } from "./rental.validation";
@@ -15,6 +16,7 @@ router.get("/", auth(UserRole.TENANT), rentalController.getMyRentals);
 router.get(
   "/landlord",
   auth(UserRole.LANDLORD),
+  validateRequest(getLandlordRentalRequestsSchema),
   rentalController.getLandlordRentalRequests,
 );
 

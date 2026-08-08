@@ -16,18 +16,20 @@ class RentalController {
     });
   });
 
-  getLandlordRentalRequests = catchAsync(
-    async (req: TReq, res: TRes, next: Tnext) => {
-      const id = req.user?.id as string;
-      console.log("landlordID: ", id);
-      const rentals = await rentalService.getLandlordRentalRequests(id);
-      sendResponse(res, {
-        statusCode: httpStatus.OK,
-        message: "Retrieve all rentals",
-        data: rentals,
-      });
-    },
-  );
+  getLandlordRentalRequests = catchAsync(async (req: TReq, res: TRes) => {
+    const landlordId = req.user!.id;
+
+    const rentals = await rentalService.getLandlordRentalRequests(
+      landlordId,
+      req.query,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Retrieved landlord rental requests successfully",
+      data: rentals,
+    });
+  });
 
   getRentalDetails = catchAsync(async (req: TReq, res: TRes, next: Tnext) => {
     const tenantId = req.body.tenantId as string;

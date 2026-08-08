@@ -1,4 +1,5 @@
 import httpStatus from "http-status";
+import type { Prisma } from "../../../generated/prisma/client";
 import {
   PaymentStatus,
   RentalRequestStatus,
@@ -54,45 +55,121 @@ class RentalService {
     return rentalRequests;
   };
 
-  getLandlordRentalRequests = async (landlordId: string) => {
-    const rentalRequests = await prisma.rentalRequest.findMany({
-      where: {
-        property: {
-          landlordId,
-        },
-      },
-      select: {
-        id: true,
-        status: true,
-        moveInDate: true,
-        leaseMonths: true,
-        endDate: true,
-        createdAt: true,
+  getLandlordRentalRequests = async (
+    landlordId: string,
+    query: {
+      searchTerm?: string;
+      status?: RentalRequestStatus;
+      page?: number;
+      limit?: number;
+    },
+  ) => {
+    const { searchTerm, status, page = 1, limit = 10 } = query;
+    const numberPage = Number(page);
+    const numberLimit = Number(limit);
+    const skip = (numberPage - 1) * numberLimit;
 
-        tenant: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const where: Prisma.RentalRequestWhereInput = {
+      property: {
+        landlordId,
+      },
+
+      ...(status && {
+        status,
+      }),
+
+      ...(searchTerm && {
+        OR: [
+          {
+            tenant: {
+              name: {
+                contains: searchTerm,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            tenant: {
+              email: {
+                contains: searchTerm,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            property: {
+              title: {
+                contains: searchTerm,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            property: {
+              city: {
+                contains: searchTerm,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      }),
+    };
+
+    const [rentalRequests, total] = await prisma.$transaction([
+      prisma.rentalRequest.findMany({
+        where,
+
+        select: {
+          id: true,
+          status: true,
+          moveInDate: true,
+          leaseMonths: true,
+          endDate: true,
+          createdAt: true,
+
+          tenant: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+
+          property: {
+            select: {
+              id: true,
+              title: true,
+              rentPrice: true,
+              city: true,
+              division: true,
+            },
           },
         },
 
-        property: {
-          select: {
-            id: true,
-            title: true,
-            rentPrice: true,
-            city: true,
-            division: true,
-          },
+        orderBy: {
+          createdAt: "desc",
         },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
 
-    return rentalRequests;
+        skip,
+        take: numberLimit,
+      }),
+
+      prisma.rentalRequest.count({
+        where,
+      }),
+    ]);
+
+    return {
+      rentals: rentalRequests,
+
+      pagination: {
+        total,
+        page: numberPage,
+        limit: numberLimit,
+        totalPages: Math.ceil(total / numberLimit),
+      },
+    };
   };
 
   getRentalDetails = async (tenantId: string, rentalId: string) => {

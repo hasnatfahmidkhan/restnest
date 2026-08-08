@@ -57,3 +57,24 @@ export const updateRentalRequestStatusSchema = z.object({
     ]),
   }),
 });
+
+export const getLandlordRentalRequestsSchema = z.object({
+  query: z.object({
+    searchTerm: z.string().trim().optional(),
+
+    status: z
+      .enum([
+        RentalRequestStatus.PENDING,
+        RentalRequestStatus.APPROVED,
+        RentalRequestStatus.REJECTED,
+        RentalRequestStatus.ACTIVE,
+        RentalRequestStatus.COMPLETED,
+        RentalRequestStatus.CANCELED,
+      ])
+      .optional(),
+
+    page: z.coerce.number().int().min(1).default(1),
+
+    limit: z.coerce.number().int().min(1).max(50).default(10),
+  }),
+});
